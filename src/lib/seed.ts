@@ -1,0 +1,240 @@
+import { prisma } from './db';
+
+export async function seedDatabase() {
+  const existingKK = await prisma.kartuKeluarga.count();
+  if (existingKK > 0) {
+    return; // Sudah terisi
+  }
+
+  // KK 1
+  await prisma.kartuKeluarga.create({
+    data: {
+      no_kk: '3201012304050001',
+      kepala_keluarga: 'BAMBANG SUTRISNO',
+      alamat: 'Jl. Merpati Blok A No. 12',
+      rt: '003',
+      rw: '005',
+      kelurahan: 'Sukamaju',
+      kecamatan: 'Cilodong',
+      kabupaten_kota: 'Kota Depok',
+      provinsi: 'Jawa Barat',
+      kode_pos: '16415',
+      no_rumah: '12',
+      blok: 'A',
+      status_hunian: 'Tetap',
+      tgl_dikeluarkan: '2019-03-12',
+      anggota: {
+        create: [
+          {
+            nik: '3201011203750002',
+            nama_lengkap: 'BAMBANG SUTRISNO',
+            jenis_kelamin: 'LAKI-LAKI',
+            tempat_lahir: 'Solo',
+            tanggal_lahir: '1975-03-12',
+            agama: 'ISLAM',
+            pendidikan: 'S1',
+            pekerjaan: 'Pegawai Negeri Sipil',
+            status_perkawinan: 'KAWIN',
+            status_hubungan: 'KEPALA KELUARGA',
+            nama_ayah: 'Sutrisno Broto',
+            nama_ibu: 'Sri Wahyuni',
+            status_warga: 'Aktif',
+            no_telp: '081234567890',
+            golongan_darah: 'O',
+          },
+          {
+            nik: '3201015408800004',
+            nama_lengkap: 'SRI WIDYASTUTI',
+            jenis_kelamin: 'PEREMPUAN',
+            tempat_lahir: 'Yogyakarta',
+            tanggal_lahir: '1980-08-14',
+            agama: 'ISLAM',
+            pendidikan: 'S1',
+            pekerjaan: 'Ibu Rumah Tangga',
+            status_perkawinan: 'KAWIN',
+            status_hubungan: 'ISTRI',
+            nama_ayah: 'Widodo',
+            nama_ibu: 'Sunarti',
+            status_warga: 'Aktif',
+            no_telp: '081298765432',
+            golongan_darah: 'A',
+          },
+          {
+            nik: '3201010506080001',
+            nama_lengkap: 'BAGAS ARYA SUTRISNO',
+            jenis_kelamin: 'LAKI-LAKI',
+            tempat_lahir: 'Depok',
+            tanggal_lahir: '2008-06-05',
+            agama: 'ISLAM',
+            pendidikan: 'SLTA / SEDERAJAT',
+            pekerjaan: 'Pelajar / Mahasiswa',
+            status_perkawinan: 'BELUM KAWIN',
+            status_hubungan: 'ANAK',
+            nama_ayah: 'BAMBANG SUTRISNO',
+            nama_ibu: 'SRI WIDYASTUTI',
+            status_warga: 'Aktif',
+            golongan_darah: 'O',
+          },
+          {
+            nik: '3201011112950009',
+            nama_lengkap: 'EKO PRASETYO',
+            jenis_kelamin: 'LAKI-LAKI',
+            tempat_lahir: 'Surabaya',
+            tanggal_lahir: '1995-12-11',
+            agama: 'ISLAM',
+            pendidikan: 'S1',
+            pekerjaan: 'Karyawan Swasta',
+            status_perkawinan: 'BELUM KAWIN',
+            status_hubungan: 'FAMILI LAIN',
+            nama_ayah: 'Prasetyo Utomo',
+            nama_ibu: 'Karsiti',
+            status_warga: 'Pindah',
+            golongan_darah: 'B',
+          },
+        ],
+      },
+    },
+  });
+
+  // KK 2
+  await prisma.kartuKeluarga.create({
+    data: {
+      no_kk: '3201011508090008',
+      kepala_keluarga: 'AHMAD FAUZI',
+      alamat: 'Jl. Merpati Blok B No. 05',
+      rt: '003',
+      rw: '005',
+      kelurahan: 'Sukamaju',
+      kecamatan: 'Cilodong',
+      kabupaten_kota: 'Kota Depok',
+      provinsi: 'Jawa Barat',
+      kode_pos: '16415',
+      no_rumah: '05',
+      blok: 'B',
+      status_hunian: 'Kontrak',
+      tgl_dikeluarkan: '2021-01-20',
+      anggota: {
+        create: [
+          {
+            nik: '3201011809850007',
+            nama_lengkap: 'AHMAD FAUZI',
+            jenis_kelamin: 'LAKI-LAKI',
+            tempat_lahir: 'Padang',
+            tanggal_lahir: '1985-09-18',
+            agama: 'ISLAM',
+            pendidikan: 'D3',
+            pekerjaan: 'Wiraswasta',
+            status_perkawinan: 'KAWIN',
+            status_hubungan: 'KEPALA KELUARGA',
+            nama_ayah: 'Fauzi Anwar',
+            nama_ibu: 'Nurlela',
+            status_warga: 'Aktif',
+            no_telp: '085612345678',
+            golongan_darah: 'B',
+          },
+          {
+            nik: '3201016212880003',
+            nama_lengkap: 'RINA KUSUMA',
+            jenis_kelamin: 'PEREMPUAN',
+            tempat_lahir: 'Bandung',
+            tanggal_lahir: '1988-12-22',
+            agama: 'ISLAM',
+            pendidikan: 'SMA/SMK',
+            pekerjaan: 'Karyawan Swasta',
+            status_perkawinan: 'KAWIN',
+            status_hubungan: 'ISTRI',
+            nama_ayah: 'Kusuma Wardhana',
+            nama_ibu: 'Rohayati',
+            status_warga: 'Aktif',
+            golongan_darah: 'B',
+          },
+        ],
+      },
+    },
+  });
+
+  // KK 3 (Dengan Riwayat Kematian & Lansia)
+  await prisma.kartuKeluarga.create({
+    data: {
+      no_kk: '3201010101060099',
+      kepala_keluarga: 'H. SOFYAN HADI',
+      alamat: 'Jl. Kenari Blok C No. 01',
+      rt: '003',
+      rw: '005',
+      kelurahan: 'Sukamaju',
+      kecamatan: 'Cilodong',
+      kabupaten_kota: 'Kota Depok',
+      provinsi: 'Jawa Barat',
+      kode_pos: '16415',
+      no_rumah: '01',
+      blok: 'C',
+      status_hunian: 'Tetap',
+      tgl_dikeluarkan: '2016-05-10',
+      anggota: {
+        create: [
+          {
+            nik: '3201010101500001',
+            nama_lengkap: 'H. SOFYAN HADI',
+            jenis_kelamin: 'LAKI-LAKI',
+            tempat_lahir: 'Jakarta',
+            tanggal_lahir: '1950-01-01',
+            agama: 'ISLAM',
+            pendidikan: 'SLTA / SEDERAJAT',
+            pekerjaan: 'Pensiunan',
+            status_perkawinan: 'CERAI MATI',
+            status_hubungan: 'KEPALA KELUARGA',
+            nama_ayah: 'Hadi Sucipto',
+            nama_ibu: 'Mariam',
+            status_warga: 'Aktif',
+            no_telp: '081388889999',
+            golongan_darah: 'AB',
+          },
+          {
+            nik: '3201014102550002',
+            nama_lengkap: 'HJ. NUR HASANAH',
+            jenis_kelamin: 'PEREMPUAN',
+            tempat_lahir: 'Depok',
+            tanggal_lahir: '1955-02-01',
+            agama: 'ISLAM',
+            pendidikan: 'SLTA / SEDERAJAT',
+            pekerjaan: 'Meninggal Dunia',
+            status_perkawinan: 'KAWIN',
+            status_hubungan: 'ISTRI',
+            nama_ayah: 'Hasan Basri',
+            nama_ibu: 'Fatmah',
+            status_warga: 'Meninggal',
+            golongan_darah: 'O',
+          },
+        ],
+      },
+    },
+  });
+
+  // Catat riwayat kematian untuk Hj. Nur Hasanah
+  await prisma.riwayatMutasi.create({
+    data: {
+      nik: '3201014102550002',
+      nama_warga: 'HJ. NUR HASANAH',
+      no_kk: '3201010101060099',
+      jenis_mutasi: 'Kematian',
+      tanggal_kejadian: '2023-11-14',
+      keterangan: 'Meninggal karena sakit usia lanjut di RSUD Cibinong',
+      no_surat: '474.3/12/SKM/XI/2023',
+      dicatat_oleh: 'Ketua RT 003',
+    },
+  });
+
+  // Catat riwayat warga pindah keluar
+  await prisma.riwayatMutasi.create({
+    data: {
+      nik: '3201011112950009',
+      nama_warga: 'EKO PRASETYO',
+      no_kk: '3201012304050001',
+      jenis_mutasi: 'Pindah Keluar',
+      tanggal_kejadian: '2024-02-10',
+      keterangan: 'Pindah ke Surabaya karena mutasi tempat kerja',
+      no_surat: '475/04/SPP/II/2024',
+      dicatat_oleh: 'Ketua RT 003',
+    },
+  });
+}

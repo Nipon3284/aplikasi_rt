@@ -1,0 +1,162 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 700" width="1000" height="700">
+  <rect width="1000" height="700" fill="#f8fafc" stroke="#94a3b8" stroke-width="4"/>
+  <rect x="20" y="20" width="960" height="660" fill="#ffffff" stroke="#cbd5e1" stroke-width="2"/>
+  
+  <!-- Header Garuda & Judul -->
+  <text x="500" y="60" font-family="Arial, sans-serif" font-size="24" font-weight="bold" text-anchor="middle" fill="#0f172a">REPUBLIK INDONESIA</text>
+  <text x="500" y="95" font-family="Arial, sans-serif" font-size="28" font-weight="900" text-anchor="middle" fill="#0f172a" letter-spacing="2">KARTU KELUARGA</text>
+  <text x="500" y="130" font-family="Arial, sans-serif" font-size="22" font-weight="bold" text-anchor="middle" fill="#1e293b">No. 3201012908050012</text>
+  
+  <!-- Informasi KK -->
+  <g font-family="Arial, sans-serif" font-size="13" fill="#334155">
+    <text x="50" y="170"><tspan font-weight="bold">Nama Kepala Keluarga</tspan> : BUDI HARTONO</text>
+    <text x="50" y="195"><tspan font-weight="bold">Alamat</tspan> : JL. MELATI RAYA NO. 28 BLOK B</text>
+    <text x="50" y="220"><tspan font-weight="bold">RT / RW</tspan> : 003 / 005</text>
+    <text x="50" y="245"><tspan font-weight="bold">Kode Pos</tspan> : 16415</text>
+
+    <text x="550" y="170"><tspan font-weight="bold">Desa / Kelurahan</tspan> : SUKAMAJU</text>
+    <text x="550" y="195"><tspan font-weight="bold">Kecamatan</tspan> : CILODONG</text>
+    <text x="550" y="220"><tspan font-weight="bold">Kabupaten / Kota</tspan> : KOTA DEPOK</text>
+    <text x="550" y="245"><tspan font-weight="bold">Provinsi</tspan> : JAWA BARAT</text>
+  </g>
+
+  <!-- Tabel Anggota Keluarga Bagian 1 -->
+  <rect x="40" y="270" width="920" height="180" fill="none" stroke="#475569" stroke-width="1.5"/>
+  <line x1="40" y1="305" x2="960" y2="305" stroke="#475569" stroke-width="1.5"/>
+  <rect x="40" y="270" width="920" height="35" fill="#f1f5f9"/>
+
+  <g font-family="Arial, sans-serif" font-size="11" font-weight="bold" fill="#0f172a" text-anchor="middle">
+    <text x="65" y="292">No</text>
+    <text x="200" y="292">Nama Lengkap</text>
+    <text x="360" y="292">NIK</text>
+    <text x="470" y="292">Jenis Kelamin</text>
+    <text x="570" y="292">Tempat Lahir</text>
+    <text x="680" y="292">Tanggal Lahir</text>
+    <text x="770" y="292">Agama</text>
+    <text x="890" y="292">Pendidikan</text>
+  </g>
+
+  <!-- Garis Kolom Tabel 1 -->
+  <line x1="90" y1="270" x2="90" y2="450" stroke="#475569" stroke-width="1"/>
+  <line x1="300" y1="270" x2="300" y2="450" stroke="#475569" stroke-width="1"/>
+  <line x1="420" y1="270" x2="420" y2="450" stroke="#475569" stroke-width="1"/>
+  <line x1="520" y1="270" x2="520" y2="450" stroke="#475569" stroke-width="1"/>
+  <line x1="620" y1="270" x2="620" y2="450" stroke="#475569" stroke-width="1"/>
+  <line x1="730" y1="270" x2="730" y2="450" stroke="#475569" stroke-width="1"/>
+  <line x1="820" y1="270" x2="820" y2="450" stroke="#475569" stroke-width="1"/>
+
+  <!-- Baris Data 1 -->
+  <line x1="40" y1="340" x2="960" y2="340" stroke="#cbd5e1" stroke-width="1"/>
+  <g font-family="Arial, sans-serif" font-size="11" fill="#1e293b">
+    <text x="65" y="326" text-anchor="middle">1</text>
+    <text x="100" y="326">BUDI HARTONO</text>
+    <text x="310" y="326">3201011505780003</text>
+    <text x="470" y="326" text-anchor="middle">LAKI-LAKI</text>
+    <text x="570" y="326" text-anchor="middle">DEPOK</text>
+    <text x="680" y="326" text-anchor="middle">15-05-1978</text>
+    <text x="770" y="326" text-anchor="middle">ISLAM</text>
+    <text x="890" y="326" text-anchor="middle">SLTA</text>
+  </g>
+
+  <!-- Baris Data 2 -->
+  <line x1="40" y1="375" x2="960" y2="375" stroke="#cbd5e1" stroke-width="1"/>
+  <g font-family="Arial, sans-serif" font-size="11" fill="#1e293b">
+    <text x="65" y="361" text-anchor="middle">2</text>
+    <text x="100" y="361">SITI RAHMAWATI</text>
+    <text x="310" y="361">3201015208820008</text>
+    <text x="470" y="361" text-anchor="middle">PEREMPUAN</text>
+    <text x="570" y="361" text-anchor="middle">BOGOR</text>
+    <text x="680" y="361" text-anchor="middle">12-08-1982</text>
+    <text x="770" y="361" text-anchor="middle">ISLAM</text>
+    <text x="890" y="361" text-anchor="middle">D3</text>
+  </g>
+
+  <!-- Baris Data 3 -->
+  <line x1="40" y1="410" x2="960" y2="410" stroke="#cbd5e1" stroke-width="1"/>
+  <g font-family="Arial, sans-serif" font-size="11" fill="#1e293b">
+    <text x="65" y="396" text-anchor="middle">3</text>
+    <text x="100" y="396">DIMAS HARTONO</text>
+    <text x="310" y="396">3201011910080004</text>
+    <text x="470" y="396" text-anchor="middle">LAKI-LAKI</text>
+    <text x="570" y="396" text-anchor="middle">DEPOK</text>
+    <text x="680" y="396" text-anchor="middle">19-10-2008</text>
+    <text x="770" y="396" text-anchor="middle">ISLAM</text>
+    <text x="890" y="396" text-anchor="middle">SLTP</text>
+  </g>
+
+  <!-- Baris Data 4 -->
+  <g font-family="Arial, sans-serif" font-size="11" fill="#1e293b">
+    <text x="65" y="433" text-anchor="middle">4</text>
+    <text x="100" y="433">ANNISA AULIA HARTONO</text>
+    <text x="310" y="433">3201014502150001</text>
+    <text x="470" y="433" text-anchor="middle">PEREMPUAN</text>
+    <text x="570" y="433" text-anchor="middle">DEPOK</text>
+    <text x="680" y="433" text-anchor="middle">05-02-2015</text>
+    <text x="770" y="433" text-anchor="middle">ISLAM</text>
+    <text x="890" y="433" text-anchor="middle">BELUM SD</text>
+  </g>
+
+  <!-- Tabel Bagian 2 (Status & Hubungan) -->
+  <rect x="40" y="465" width="920" height="150" fill="none" stroke="#475569" stroke-width="1.5"/>
+  <rect x="40" y="465" width="920" height="30" fill="#f1f5f9"/>
+  <line x1="40" y1="495" x2="960" y2="495" stroke="#475569" stroke-width="1.5"/>
+
+  <g font-family="Arial, sans-serif" font-size="11" font-weight="bold" fill="#0f172a" text-anchor="middle">
+    <text x="65" y="485">No</text>
+    <text x="180" y="485">Status Perkawinan</text>
+    <text x="330" y="485">Status Hubungan</text>
+    <text x="470" y="485">Kewarganegaraan</text>
+    <text x="630" y="485">Nama Ayah</text>
+    <text x="810" y="485">Nama Ibu</text>
+    <text x="925" y="485">Gol</text>
+  </g>
+
+  <line x1="90" y1="465" x2="90" y2="615" stroke="#475569" stroke-width="1"/>
+  <line x1="250" y1="465" x2="250" y2="615" stroke="#475569" stroke-width="1"/>
+  <line x1="400" y1="465" x2="400" y2="615" stroke="#475569" stroke-width="1"/>
+  <line x1="530" y1="465" x2="530" y2="615" stroke="#475569" stroke-width="1"/>
+  <line x1="720" y1="465" x2="720" y2="615" stroke="#475569" stroke-width="1"/>
+  <line x1="895" y1="465" x2="895" y2="615" stroke="#475569" stroke-width="1"/>
+
+  <g font-family="Arial, sans-serif" font-size="11" fill="#1e293b">
+    <text x="65" y="520" text-anchor="middle">1</text>
+    <text x="180" y="520" text-anchor="middle">KAWIN</text>
+    <text x="330" y="520" text-anchor="middle">KEPALA KELUARGA</text>
+    <text x="470" y="520" text-anchor="middle">WNI</text>
+    <text x="630" y="520" text-anchor="middle">SUTARTO</text>
+    <text x="810" y="520" text-anchor="middle">SUMIATI</text>
+    <text x="925" y="520" text-anchor="middle">O</text>
+
+    <line x1="40" y1="535" x2="960" y2="535" stroke="#cbd5e1" stroke-width="1"/>
+    <text x="65" y="552" text-anchor="middle">2</text>
+    <text x="180" y="552" text-anchor="middle">KAWIN</text>
+    <text x="330" y="552" text-anchor="middle">ISTRI</text>
+    <text x="470" y="552" text-anchor="middle">WNI</text>
+    <text x="630" y="552" text-anchor="middle">H. MARZUKI</text>
+    <text x="810" y="552" text-anchor="middle">HALIMAH</text>
+    <text x="925" y="552" text-anchor="middle">A</text>
+
+    <line x1="40" y1="565" x2="960" y2="565" stroke="#cbd5e1" stroke-width="1"/>
+    <text x="65" y="582" text-anchor="middle">3</text>
+    <text x="180" y="582" text-anchor="middle">BELUM KAWIN</text>
+    <text x="330" y="582" text-anchor="middle">ANAK</text>
+    <text x="470" y="582" text-anchor="middle">WNI</text>
+    <text x="630" y="582" text-anchor="middle">BUDI HARTONO</text>
+    <text x="810" y="582" text-anchor="middle">SITI RAHMAWATI</text>
+    <text x="925" y="582" text-anchor="middle">O</text>
+
+    <line x1="40" y1="595" x2="960" y2="595" stroke="#cbd5e1" stroke-width="1"/>
+    <text x="65" y="610" text-anchor="middle">4</text>
+    <text x="180" y="610" text-anchor="middle">BELUM KAWIN</text>
+    <text x="330" y="610" text-anchor="middle">ANAK</text>
+    <text x="470" y="610" text-anchor="middle">WNI</text>
+    <text x="630" y="610" text-anchor="middle">BUDI HARTONO</text>
+    <text x="810" y="610" text-anchor="middle">SITI RAHMAWATI</text>
+    <text x="925" y="610" text-anchor="middle">A</text>
+  </g>
+
+  <!-- Footer TTD dan Tanggal -->
+  <text x="800" y="640" font-family="Arial, sans-serif" font-size="12" text-anchor="middle" fill="#475569">Dikeluarkan Tanggal: 18-06-2020</text>
+  <text x="800" y="660" font-family="Arial, sans-serif" font-size="12" font-weight="bold" text-anchor="middle" fill="#0f172a">KEPALA KELUARGA</text>
+  <text x="800" y="680" font-family="Arial, sans-serif" font-size="12" text-anchor="middle" fill="#0f172a">( BUDI HARTONO )</text>
+</svg>
