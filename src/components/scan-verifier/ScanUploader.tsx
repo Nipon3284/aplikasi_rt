@@ -157,9 +157,9 @@ export default function ScanUploader({ onUploadSuccess }: ScanUploaderProps) {
           )
         );
 
-        // Beri jeda 1.2 detik antar-berkas agar tidak memicu pembatasan lonjakan kuota (burst rate limit)
+        // Beri jeda 3.5 detik antar-berkas agar tidak memicu pembatasan kuota RPM (maks 15 req/menit)
         if (i < initialItems.length - 1) {
-          await new Promise((resolve) => setTimeout(resolve, 1200));
+          await new Promise((resolve) => setTimeout(resolve, 3500));
         }
       } catch (err: any) {
         setBatchItems((prev) =>

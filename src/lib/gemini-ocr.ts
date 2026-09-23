@@ -90,7 +90,11 @@ Format output JSON yang wajib dipatuhi:
 }
 `;
 
-  const modelsToTry = ['gemini-3.6-flash', 'gemini-flash-latest'];
+  const modelsToTry = [
+    'gemini-3.5-flash',
+    'gemini-3.5-flash-lite',
+    'gemini-flash-lite-latest',
+  ];
   let lastError: any = null;
 
   const now = Date.now();
@@ -108,7 +112,7 @@ Format output JSON yang wajib dipatuhi:
     }
 
     const ai = new GoogleGenAI({ apiKey: currentKey });
-    let isQuotaError = false;
+    let anyModelSucceeded = false;
 
     for (const modelName of modelsToTry) {
       try {
@@ -142,6 +146,7 @@ Format output JSON yang wajib dipatuhi:
           // Sukses: jadikan kunci ini sebagai kunci aktif dan hapus riwayat cooldown
           currentActiveKeyIndex = keyIdx;
           keyCooldownMap.delete(currentKey);
+          anyModelSucceeded = true;
           return validated;
         }
       } catch (err: any) {
@@ -154,27 +159,29 @@ Format output JSON yang wajib dipatuhi:
           errStr.includes('RESOURCE_EXHAUSTED');
 
         if (is429) {
-          isQuotaError = true;
-          // Beri jeda cooldown 60 detik untuk kunci yang limit ini
-          keyCooldownMap.set(currentKey, Date.now() + 60 * 1000);
           console.warn(
-            `[Gemini OCR] Key #${keyIdx + 1} (${currentKey.substring(0, 8)}...) mencapai batas kuota (Error 429). Otomatis mengalihkan ke kunci berikutnya...`
+            `[Gemini OCR] Model ${modelName} pada Key #${keyIdx + 1} (${currentKey.substring(0, 8)}...) mencapai batas (429). Mencoba model alternatif...`
           );
-          break; // Segera tinggalkan key ini dan lanjut ke key berikutnya
+          // Beri jeda singkat sebelum mencoba model berikutnya pada kunci yang sama
+          await new Promise((resolve) => setTimeout(resolve, 600));
+          continue;
         }
 
         console.warn(
           `Gemini OCR model ${modelName} pada Key #${keyIdx + 1} gagal, mencoba cadangan:`,
           err?.message || err
         );
-        await new Promise((resolve) => setTimeout(resolve, 800));
+        await new Promise((resolve) => setTimeout(resolve, 600));
       }
     }
 
-    if (isQuotaError) {
-      // Alihkan pointer aktif ke kunci berikutnya untuk panggilan selanjutnya
+    // Jika seluruh model pada kunci ini gagal:
+    if (!anyModelSucceeded) {
+      keyCooldownMap.set(currentKey, Date.now() + 60 * 1000);
+      console.warn(
+        `[Gemini OCR] Semua model pada Key #${keyIdx + 1} belum berhasil atau limit. Mengalihkan ke kunci berikutnya...`
+      );
       currentActiveKeyIndex = (keyIdx + 1) % totalKeys;
-      continue;
     }
   }
 

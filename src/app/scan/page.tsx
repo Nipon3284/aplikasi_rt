@@ -175,9 +175,9 @@ export default function ScanPage() {
 
       setSingleScanningId(null);
 
-      // Jeda 1.5 detik antar-berkas untuk menjaga kuota rate limit Google Gemini API
+      // Jeda 3.5 detik antar-berkas untuk menjaga batas kuota RPM (maks 15 request/menit pada Google Free Tier)
       if (i < queue.length - 1 && !isCancelledRef.current) {
-        await new Promise((resolve) => setTimeout(resolve, 1500));
+        await new Promise((resolve) => setTimeout(resolve, 3500));
       }
     }
 
