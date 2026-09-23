@@ -46,27 +46,58 @@ export async function POST(req: NextRequest) {
       imageUrl = `/uploads/${filename}`;
     }
 
-    // Jalankan ekstraksi OCR / AI
-    const extracted = await extractKKFromImage(base64, mimeType);
+    // Jalankan ekstraksi OCR / AI dengan Graceful Fallback jika kuota habis/error
+    let extracted: any = null;
+    let ocrErrorMsg: string | null = null;
 
-    // Simpan ke antrean verifikasi
+    try {
+      extracted = await extractKKFromImage(base64, mimeType);
+    } catch (ocrErr: any) {
+      console.warn('[Scan Route] AI OCR gagal, memicu Graceful Fallback:', ocrErr?.message || ocrErr);
+      ocrErrorMsg = ocrErr?.message || 'Gagal mengekstrak teks otomatis';
+
+      // Fallback draft agar foto KK tetap tersimpan dan tidak hilang
+      extracted = {
+        no_kk: '',
+        kepala_keluarga: '',
+        alamat: '',
+        rt: '003',
+        rw: '003',
+        kelurahan: '',
+        kecamatan: '',
+        kabupaten_kota: '',
+        provinsi: '',
+        kode_pos: '',
+        tgl_dikeluarkan: '',
+        confidence_score: 0.1,
+        warnings: [
+          `AI OCR ditunda: ${ocrErrorMsg}. Berkas tersimpan aman dan dapat diverifikasi/dianalisis ulang.`
+        ],
+        anggota: [],
+      };
+    }
+
+    // Simpan dokumen dan draf ke antrean verifikasi
     const scanRecord = await prisma.scanQueue.create({
       data: {
         image_url: imageUrl,
         filename: filename,
-        status: 'PENDING',
+        status: ocrErrorMsg ? 'PENDING_OCR' : 'PENDING',
         extracted_json: JSON.stringify(extracted),
-        confidence_score: extracted.confidence_score,
+        confidence_score: extracted.confidence_score || 0.1,
       },
     });
 
     return NextResponse.json({
       success: true,
-      message: 'Dokumen berhasil dipindai dan masuk antrean verifikasi',
+      message: ocrErrorMsg
+        ? 'Dokumen berhasil diunggah ke antrean (analisis AI ditunda karena kuota habis)'
+        : 'Dokumen berhasil dipindai dan masuk antrean verifikasi',
       data: scanRecord,
+      ocrPending: !!ocrErrorMsg,
     });
   } catch (error: any) {
-    console.error('Error scanning KK:', error);
+    console.error('Fatal error scanning KK:', error);
     return NextResponse.json({ success: false, error: error.message }, { status: 500 });
   }
 }

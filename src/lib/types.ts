@@ -66,4 +66,5 @@ export interface ExtractedKKResult {
   }[];
   confidence_score: number;
   warnings?: string[];
+  rotation_needed?: number;
 }

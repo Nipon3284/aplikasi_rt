@@ -3,25 +3,40 @@ import { GoogleGenAI } from '@google/genai';
 import fs from 'fs';
 import path from 'path';
 
+function getApiKeys(): string[] {
+  let envVal = process.env.GEMINI_API_KEY || '';
+
+  try {
+    const envPath = path.join(process.cwd(), '.env');
+    if (fs.existsSync(envPath)) {
+      const envContent = fs.readFileSync(envPath, 'utf8');
+      const match = envContent.match(/GEMINI_API_KEY=["']?([^"'\r\n]+)["']?/);
+      if (match) {
+        envVal = match[1];
+      }
+    }
+  } catch (e) {
+    console.warn('Failed to read .env dynamically:', e);
+  }
+
+  return envVal
+    .split(',')
+    .map((k) => k.trim())
+    .filter((k) => k.length > 0);
+}
+
+// State rotasi melingkar (Circular Round-Robin Pool) & manajemen batas kuota
+let currentActiveKeyIndex = 0;
+const keyCooldownMap = new Map<string, number>();
+
 export async function extractKKFromImage(
   imageBase64: string,
   mimeType: string = 'image/jpeg'
 ): Promise<ExtractedKKResult> {
-  let apiKey = process.env.GEMINI_API_KEY;
+  const apiKeys = getApiKeys();
 
-  if (!apiKey || apiKey.trim() === '') {
-    try {
-      const envPath = path.join(process.cwd(), '.env');
-      if (fs.existsSync(envPath)) {
-        const envContent = fs.readFileSync(envPath, 'utf8');
-        const match = envContent.match(/GEMINI_API_KEY=["']?([^"'\r\n]+)["']?/);
-        if (match) {
-          apiKey = match[1];
-        }
-      }
-    } catch (e) {
-      console.warn('Failed to read .env dynamically:', e);
-    }
+  if (apiKeys.length === 0) {
+    throw new Error('GEMINI_API_KEY belum dikonfigurasi di file .env');
   }
 
   if (!imageBase64 || imageBase64.trim() === '') {
@@ -29,8 +44,7 @@ export async function extractKKFromImage(
     return getSimulatedExtraction();
   }
 
-  if (apiKey && apiKey.trim() !== '') {
-    const prompt = `
+  const prompt = `
 Anda adalah asisten AI ahli dalam membaca dan mendigitalkan dokumen kependudukan Indonesia, khususnya Kartu Keluarga (KK).
 Analisis gambar dokumen Kartu Keluarga ini dengan sangat teliti.
 
@@ -71,14 +85,30 @@ Format output JSON yang wajib dipatuhi:
       "nama_ibu": "Nama ibu kandung",
       "golongan_darah": "A / B / AB / O / -"
     }
-  ]
+  ],
+  "rotation_needed": 0 // Angka: 0, 90, 180, atau 270 (derajat putaran searah jarum jam agar teks KK terbaca tegak lurus normal dari atas ke bawah. Jika teks terbalik/upside-down, wajib beri 180)
 }
 `;
 
-    const modelsToTry = ['gemini-3.6-flash', 'gemini-flash-latest'];
-    let lastError: any = null;
+  const modelsToTry = ['gemini-3.6-flash', 'gemini-flash-latest'];
+  let lastError: any = null;
 
-    const ai = new GoogleGenAI({ apiKey });
+  const now = Date.now();
+  const totalKeys = apiKeys.length;
+
+  // Coba setiap API Key secara melingkar (Circular Round-Robin Pool)
+  for (let step = 0; step < totalKeys; step++) {
+    const keyIdx = (currentActiveKeyIndex + step) % totalKeys;
+    const currentKey = apiKeys[keyIdx];
+
+    // Jika kunci ini baru saja mencapai limit (cooldown 60 detik) dan ada opsi kunci lain, lewati dulu
+    const cooldownUntil = keyCooldownMap.get(currentKey) || 0;
+    if (now < cooldownUntil && totalKeys > 1 && step < totalKeys - 1) {
+      continue;
+    }
+
+    const ai = new GoogleGenAI({ apiKey: currentKey });
+    let isQuotaError = false;
 
     for (const modelName of modelsToTry) {
       try {
@@ -108,26 +138,55 @@ Format output JSON yang wajib dipatuhi:
         if (rawText) {
           const parsed = JSON.parse(rawText.replace(/```json\n?|```/g, '').trim());
           const validated = validateAndScore(parsed);
+
+          // Sukses: jadikan kunci ini sebagai kunci aktif dan hapus riwayat cooldown
+          currentActiveKeyIndex = keyIdx;
+          keyCooldownMap.delete(currentKey);
           return validated;
         }
       } catch (err: any) {
         lastError = err;
-        console.warn(`Gemini OCR with model ${modelName} failed, trying next:`, err?.message || err);
-        // Tunggu sejenak sebelum mencoba model cadangan
-        await new Promise((resolve) => setTimeout(resolve, 1000));
+        const errStr = (err?.message || '') + (err?.status || '');
+        const is429 =
+          err?.status === 429 ||
+          errStr.includes('429') ||
+          errStr.includes('quota') ||
+          errStr.includes('RESOURCE_EXHAUSTED');
+
+        if (is429) {
+          isQuotaError = true;
+          // Beri jeda cooldown 60 detik untuk kunci yang limit ini
+          keyCooldownMap.set(currentKey, Date.now() + 60 * 1000);
+          console.warn(
+            `[Gemini OCR] Key #${keyIdx + 1} (${currentKey.substring(0, 8)}...) mencapai batas kuota (Error 429). Otomatis mengalihkan ke kunci berikutnya...`
+          );
+          break; // Segera tinggalkan key ini dan lanjut ke key berikutnya
+        }
+
+        console.warn(
+          `Gemini OCR model ${modelName} pada Key #${keyIdx + 1} gagal, mencoba cadangan:`,
+          err?.message || err
+        );
+        await new Promise((resolve) => setTimeout(resolve, 800));
       }
     }
 
-    throw new Error(
-      `Gagal memproses dokumen KK dengan AI: ${
-        lastError?.message?.includes('503') || lastError?.status === 503
-          ? 'Server Google AI sedang sibuk (lonjakan trafik sementara). Silakan klik coba lagi.'
-          : lastError?.message || 'Koneksi ke AI terputus.'
-      }`
-    );
+    if (isQuotaError) {
+      // Alihkan pointer aktif ke kunci berikutnya untuk panggilan selanjutnya
+      currentActiveKeyIndex = (keyIdx + 1) % totalKeys;
+      continue;
+    }
   }
 
-  throw new Error('GEMINI_API_KEY belum dikonfigurasi di file .env');
+  throw new Error(
+    `Gagal memproses dokumen KK dengan AI: ${
+      lastError?.message?.includes('503') || lastError?.status === 503
+        ? 'Server Google AI sedang sibuk (lonjakan trafik sementara). Silakan klik coba lagi.'
+        : lastError?.status === 429 || lastError?.message?.includes('quota') || lastError?.message?.includes('429')
+        ? 'Batas kuota seluruh API Key Gemini telah tercapai. Berkas tetap tersimpan di antrean.'
+        : lastError?.message || 'Koneksi ke AI terputus.'
+    }`
+  );
 }
 
 function validateAndScore(data: any): ExtractedKKResult {
@@ -170,6 +229,7 @@ function validateAndScore(data: any): ExtractedKKResult {
     tgl_dikeluarkan: data.tgl_dikeluarkan || '2021-08-15',
     anggota: data.anggota || [],
     confidence_score: Math.max(0.4, Math.min(1.0, score)),
+    rotation_needed: Number(data.rotation_needed) || 0,
     warnings,
   };
 }

@@ -13,7 +13,9 @@ import {
   Trash2,
   AlertTriangle,
   X,
-  CheckCircle2
+  CheckCircle2,
+  FileSpreadsheet,
+  UploadCloud
 } from 'lucide-react';
 
 export default function KKListPage() {
@@ -102,13 +104,32 @@ export default function KKListPage() {
           </p>
         </div>
 
-        <Link
-          href="/scan"
-          className="inline-flex items-center justify-center px-4 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold shadow-sm transition gap-2 w-full sm:w-auto"
-        >
-          <Plus className="w-4 h-4" />
-          <span>Scan / Input KK Baru</span>
-        </Link>
+        <div className="flex flex-wrap items-center gap-2">
+          <button
+            onClick={() => window.open('/api/export/excel', '_blank')}
+            className="px-3.5 py-2.5 bg-emerald-50 dark:bg-emerald-950/50 hover:bg-emerald-100 dark:hover:bg-emerald-900/60 text-emerald-700 dark:text-emerald-300 border border-emerald-300 dark:border-emerald-800 rounded-xl text-xs font-bold transition flex items-center gap-1.5 shadow-sm"
+            title="Unduh Rekapitulasi Data Kependudukan & KK"
+          >
+            <FileSpreadsheet className="w-4 h-4 text-emerald-600" />
+            <span>Export Excel</span>
+          </button>
+
+          <Link
+            href="/import"
+            className="px-3.5 py-2.5 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-800 dark:text-slate-200 border border-slate-200 dark:border-slate-700 rounded-xl text-xs font-bold transition flex items-center gap-1.5 shadow-sm"
+          >
+            <UploadCloud className="w-4 h-4 text-emerald-600" />
+            <span>Import Excel</span>
+          </Link>
+
+          <Link
+            href="/scan"
+            className="inline-flex items-center justify-center px-4 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold shadow-sm transition gap-2"
+          >
+            <Plus className="w-4 h-4" />
+            <span>+ Scan KK Baru</span>
+          </Link>
+        </div>
       </div>
 
       {/* Search Toolbar */}

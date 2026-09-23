@@ -92,9 +92,9 @@ export default function ImageCropModal({
       originalImgRef.current = img;
       setImageLoaded(true);
 
-      // Jika foto awal vertikal/portrait, otomatis sarankan rotasi ke lanskap KK
+      // Jika foto awal vertikal/portrait, otomatis putar 90 derajat ke lanskap KK
       let initialRotation = 0;
-      if (img.naturalHeight > img.naturalWidth * 1.1) {
+      if (img.naturalHeight > img.naturalWidth) {
         initialRotation = 90;
       }
       setRotation(initialRotation);

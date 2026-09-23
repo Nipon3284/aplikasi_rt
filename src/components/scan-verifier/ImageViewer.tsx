@@ -13,11 +13,18 @@ import {
 interface ImageViewerProps {
   src: string;
   alt?: string;
+  initialRotation?: number;
+  onRotationChange?: (newRotation: number) => void;
 }
 
-export default function ImageViewer({ src, alt = 'Dokumen Kartu Keluarga' }: ImageViewerProps) {
+export default function ImageViewer({
+  src,
+  alt = 'Dokumen Kartu Keluarga',
+  initialRotation = 0,
+  onRotationChange,
+}: ImageViewerProps) {
   const [scale, setScale] = useState(1);
-  const [rotation, setRotation] = useState(0);
+  const [rotation, setRotation] = useState(initialRotation || 0);
   const [highContrast, setHighContrast] = useState(false);
   const [inverted, setInverted] = useState(false);
   const [position, setPosition] = useState({ x: 0, y: 0 });
@@ -26,16 +33,35 @@ export default function ImageViewer({ src, alt = 'Dokumen Kartu Keluarga' }: Ima
 
   const containerRef = useRef<HTMLDivElement>(null);
 
+  // Update rotation if initialRotation changes (e.g. from AI extraction)
+  React.useEffect(() => {
+    if (typeof initialRotation === 'number') {
+      setRotation(initialRotation);
+    }
+  }, [initialRotation]);
+
   const handleZoomIn = () => setScale((prev) => Math.min(prev + 0.25, 4));
   const handleZoomOut = () => setScale((prev) => Math.max(prev - 0.25, 0.5));
-  const handleRotate = () => setRotation((prev) => (prev + 90) % 360);
+  
+  const handleRotate = () => {
+    const next = (rotation + 90) % 360;
+    setRotation(next);
+    if (onRotationChange) onRotationChange(next);
+  };
+
+  const handleFlip180 = () => {
+    const next = (rotation + 180) % 360;
+    setRotation(next);
+    if (onRotationChange) onRotationChange(next);
+  };
   
   const handleReset = () => {
     setScale(1);
-    setRotation(0);
+    setRotation(initialRotation || 0);
     setPosition({ x: 0, y: 0 });
     setHighContrast(false);
     setInverted(false);
+    if (onRotationChange) onRotationChange(initialRotation || 0);
   };
 
   const handleMouseDown = (e: React.MouseEvent) => {
@@ -85,10 +111,22 @@ export default function ImageViewer({ src, alt = 'Dokumen Kartu Keluarga' }: Ima
           <button
             onClick={handleRotate}
             className="p-1.5 rounded bg-slate-800 hover:bg-slate-700 text-slate-200"
-            title="Putar 90 Derajat"
+            title="Putar 90 Derajat Searah Jarum Jam"
           >
             <RotateCw className="w-4 h-4" />
           </button>
+          <button
+            onClick={handleFlip180}
+            className="px-2 py-1 rounded bg-slate-800 hover:bg-slate-700 text-slate-200 font-mono text-[11px] font-bold transition"
+            title="Balikkan dokumen 180 derajat (jika dokumen terbalik)"
+          >
+            Balik 180°
+          </button>
+          {rotation > 0 && (
+            <span className="text-amber-400 font-mono text-[10px] px-1 font-bold">
+              {rotation}°
+            </span>
+          )}
           <button
             onClick={handleReset}
             className="p-1.5 rounded bg-slate-800 hover:bg-slate-700 text-slate-200"

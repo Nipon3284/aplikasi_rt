@@ -14,7 +14,9 @@ import {
   User,
   FileText,
   Image as ImageIcon,
-  Eye
+  Eye,
+  Sparkles,
+  RefreshCw
 } from 'lucide-react';
 import Link from 'next/link';
 
@@ -81,6 +83,7 @@ export default function VerificationWorkspace({ scan }: VerificationWorkspacePro
   const [saveSuccess, setSaveSuccess] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
   const [mobileTab, setMobileTab] = useState<'form' | 'image'>('form');
+  const [imageRotation, setImageRotation] = useState<number>(initialData.rotation_needed || 0);
 
   // Handle updates on KK fields
   const handleKKChange = (field: string, value: string) => {
@@ -179,6 +182,53 @@ export default function VerificationWorkspace({ scan }: VerificationWorkspacePro
     }
   };
 
+  const [isReExtracting, setIsReExtracting] = useState(false);
+
+  // Re-run AI extraction
+  const handleReExtract = async () => {
+    setIsReExtracting(true);
+    setErrorMessage('');
+    try {
+      const res = await fetch(`/api/scan/${scan.id}`, { method: 'POST' });
+      const data = await res.json();
+      if (!res.ok || !data.success) {
+        throw new Error(data.error || 'Gagal mengekstrak ulang dengan AI');
+      }
+
+      const parsed = JSON.parse(data.data.extracted_json);
+      setKKData({
+        no_kk: parsed.no_kk || '',
+        kepala_keluarga: parsed.kepala_keluarga || '',
+        alamat: parsed.alamat || '',
+        rt: parsed.rt || '003',
+        rw: parsed.rw || '003',
+        kelurahan: parsed.kelurahan || '',
+        kecamatan: parsed.kecamatan || '',
+        kabupaten_kota: parsed.kabupaten_kota || '',
+        provinsi: parsed.provinsi || '',
+        kode_pos: parsed.kode_pos || '',
+        tgl_dikeluarkan: parsed.tgl_dikeluarkan || '',
+        no_rumah: '',
+        blok: '',
+        status_hunian: 'Tetap',
+      });
+
+      if (parsed.anggota && Array.isArray(parsed.anggota)) {
+        setAnggotaList(parsed.anggota);
+      }
+
+      if (typeof parsed.rotation_needed === 'number') {
+        setImageRotation(parsed.rotation_needed);
+      }
+
+      alert('Ekstraksi teks AI berhasil diperbarui!');
+    } catch (err: any) {
+      setErrorMessage(err.message || 'Terjadi kesalahan saat memproses');
+    } finally {
+      setIsReExtracting(false);
+    }
+  };
+
   // Reject scan
   const handleRejectScan = async () => {
     if (confirm('Apakah Anda yakin ingin menolak / membatalkan scan ini?')) {
@@ -229,6 +279,26 @@ export default function VerificationWorkspace({ scan }: VerificationWorkspacePro
               {confidencePercentage}% Akurat
             </div>
           </div>
+
+          <button
+            type="button"
+            onClick={handleReExtract}
+            disabled={isReExtracting}
+            className="inline-flex items-center gap-1.5 px-3 py-2 text-xs font-semibold text-emerald-700 dark:text-emerald-300 bg-emerald-50 dark:bg-emerald-950/40 hover:bg-emerald-100 dark:hover:bg-emerald-900/50 rounded-lg border border-emerald-200 dark:border-emerald-800 transition shadow-sm disabled:opacity-50"
+            title="Jalankan AI OCR ulang jika sebelumnya terlewat atau kuota baru direset"
+          >
+            {isReExtracting ? (
+              <>
+                <RefreshCw className="w-3.5 h-3.5 animate-spin" />
+                <span>Mengekstrak AI...</span>
+              </>
+            ) : (
+              <>
+                <Sparkles className="w-3.5 h-3.5 text-amber-500" />
+                <span>Analisis Ulang AI</span>
+              </>
+            )}
+          </button>
 
           <button
             onClick={handleRejectScan}
@@ -322,7 +392,12 @@ export default function VerificationWorkspace({ scan }: VerificationWorkspacePro
         <div className={`lg:col-span-5 h-[480px] sm:h-[580px] lg:h-[680px] lg:sticky lg:top-20 space-y-2 ${
           mobileTab === 'image' ? 'block' : 'hidden lg:block'
         }`}>
-          <ImageViewer src={scan.image_url} alt={`Scan ${scan.filename}`} />
+          <ImageViewer
+            src={scan.image_url}
+            alt={`Scan ${scan.filename}`}
+            initialRotation={imageRotation}
+            onRotationChange={(deg) => setImageRotation(deg)}
+          />
           {/* Tombol kembali ke form di tampilan HP */}
           <div className="lg:hidden pt-1">
             <button

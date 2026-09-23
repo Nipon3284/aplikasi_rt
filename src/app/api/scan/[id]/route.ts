@@ -1,5 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/db';
+import { extractKKFromImage } from '@/lib/gemini-ocr';
+import fs from 'fs';
+import path from 'path';
 
 export async function GET(
   req: NextRequest,
@@ -152,6 +155,66 @@ export async function DELETE(
 
     return NextResponse.json({ success: true, message: 'Scan ditandai Ditolak / Dihapus' });
   } catch (error: any) {
+    return NextResponse.json({ success: false, error: error.message }, { status: 500 });
+  }
+}
+
+export async function POST(
+  req: NextRequest,
+  { params }: { params: { id: string } }
+) {
+  try {
+    const scan = await prisma.scanQueue.findUnique({
+      where: { id: params.id },
+    });
+
+    if (!scan) {
+      return NextResponse.json({ success: false, error: 'Data scan tidak ditemukan' }, { status: 404 });
+    }
+
+    let base64 = '';
+    let mimeType = 'image/jpeg';
+
+    if (scan.image_url && scan.image_url.startsWith('/uploads/')) {
+      const filePath = path.join(process.cwd(), 'public', scan.image_url.replace(/^\//, ''));
+      if (fs.existsSync(filePath)) {
+        const fileBuffer = fs.readFileSync(filePath);
+        base64 = fileBuffer.toString('base64');
+        mimeType = filePath.toLowerCase().endsWith('.png') ? 'image/png' : 'image/jpeg';
+      }
+    }
+
+    if (!base64) {
+      return NextResponse.json(
+        { success: false, error: 'Berkas gambar scan tidak ditemukan di server' },
+        { status: 400 }
+      );
+    }
+
+    // Jalankan OCR ulang dengan multi-key pool
+    const extracted = await extractKKFromImage(base64, mimeType);
+
+    const hasNoKK = !extracted.no_kk || extracted.no_kk.trim() === '';
+    const newStatus = (hasNoKK || (extracted.confidence_score !== undefined && extracted.confidence_score <= 0.2))
+      ? 'PENDING_OCR'
+      : 'PENDING';
+
+    const updated = await prisma.scanQueue.update({
+      where: { id: params.id },
+      data: {
+        status: newStatus,
+        extracted_json: JSON.stringify(extracted),
+        confidence_score: extracted.confidence_score,
+      },
+    });
+
+    return NextResponse.json({
+      success: true,
+      message: 'Analisis AI ulang berhasil!',
+      data: updated,
+    });
+  } catch (error: any) {
+    console.error('Error re-running OCR:', error);
     return NextResponse.json({ success: false, error: error.message }, { status: 500 });
   }
 }

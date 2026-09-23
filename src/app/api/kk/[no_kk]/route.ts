@@ -19,7 +19,33 @@ export async function GET(
       return NextResponse.json({ success: false, error: 'Kartu Keluarga tidak ditemukan' }, { status: 404 });
     }
 
-    return NextResponse.json({ success: true, data: kk });
+    // Cari berkas scan terverifikasi yang cocok dengan no_kk ini
+    const scanDoc = await prisma.scanQueue.findFirst({
+      where: {
+        no_kk_result: params.no_kk,
+        status: 'VERIFIED',
+      },
+      orderBy: {
+        verified_at: 'desc',
+      },
+    });
+
+    const scanData = scanDoc ? {
+      id: scanDoc.id,
+      image_url: scanDoc.image_url,
+      filename: scanDoc.filename,
+      file_type: scanDoc.image_url.toLowerCase().endsWith('.pdf') ? 'pdf' : 'image',
+      verified_at: scanDoc.verified_at,
+      confidence_score: scanDoc.confidence_score,
+    } : null;
+
+    return NextResponse.json({ 
+      success: true, 
+      data: {
+        ...kk,
+        scan_document: scanData,
+      } 
+    });
   } catch (error: any) {
     return NextResponse.json({ success: false, error: error.message }, { status: 500 });
   }

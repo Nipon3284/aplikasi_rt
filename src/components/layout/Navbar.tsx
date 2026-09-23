@@ -11,7 +11,8 @@ import {
   History, 
   UserCheck, 
   Menu, 
-  X
+  X,
+  UploadCloud
 } from 'lucide-react';
 
 export default function Navbar() {
@@ -41,14 +42,15 @@ export default function Navbar() {
     { href: '/', label: 'Dashboard', icon: Home },
     { 
       href: '/scan', 
-      label: 'Scan & Verifikasi KK', 
+      label: 'Scan KK', 
       icon: ScanLine,
       badge: pendingCount > 0 ? pendingCount : null
     },
+    { href: '/import', label: 'Import Data', icon: UploadCloud },
     { href: '/warga', label: 'Data Warga', icon: Users },
     { href: '/kk', label: 'Kartu Keluarga', icon: UserCheck },
-    { href: '/mutasi', label: 'Riwayat Mutasi', icon: History },
-    { href: '/surat', label: 'Surat Pengantar', icon: FileText },
+    { href: '/mutasi', label: 'Mutasi', icon: History },
+    { href: '/surat', label: 'Surat', icon: FileText },
   ];
 
   return (

@@ -80,3 +80,5 @@ model ScanQueue {
   verified_at        DateTime?
   no_kk_result       String?
 }
+
+
