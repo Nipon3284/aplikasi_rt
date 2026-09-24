@@ -12,13 +12,17 @@ import {
   UserCheck, 
   Menu, 
   X,
-  UploadCloud
+  UploadCloud,
+  Smartphone,
+  Check
 } from 'lucide-react';
 
 export default function Navbar() {
   const pathname = usePathname();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [pendingCount, setPendingCount] = useState(0);
+  const [mobileUrl, setMobileUrl] = useState<string | null>(null);
+  const [copiedMobile, setCopiedMobile] = useState(false);
 
   const fetchPending = async () => {
     try {
@@ -32,11 +36,31 @@ export default function Navbar() {
     }
   };
 
+  const fetchSystemInfo = async () => {
+    try {
+      const res = await fetch('/api/system-info');
+      const data = await res.json();
+      if (data.success && data.localIp && data.localIp !== '127.0.0.1') {
+        setMobileUrl(data.mobileUrl);
+      }
+    } catch {
+      // ignore
+    }
+  };
+
   useEffect(() => {
     fetchPending();
+    fetchSystemInfo();
     const interval = setInterval(fetchPending, 10000);
     return () => clearInterval(interval);
   }, [pathname]);
+
+  const handleCopyMobileUrl = () => {
+    if (!mobileUrl) return;
+    navigator.clipboard.writeText(mobileUrl);
+    setCopiedMobile(true);
+    setTimeout(() => setCopiedMobile(false), 2500);
+  };
 
   const navItems = [
     { href: '/', label: 'Dashboard', icon: Home },
@@ -103,6 +127,22 @@ export default function Navbar() {
               );
             })}
           </nav>
+
+          {/* Mobile URL Indicator & Button (Desktop) */}
+          {mobileUrl && (
+            <button
+              type="button"
+              onClick={handleCopyMobileUrl}
+              className="hidden lg:flex items-center gap-2 px-3 py-1.5 rounded-full bg-slate-800/80 hover:bg-slate-700/80 border border-slate-700 hover:border-emerald-500/50 text-[11px] text-slate-300 transition shadow-sm group"
+              title="Klik untuk salin alamat akses dari HP"
+            >
+              <Smartphone className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
+              <span className="font-mono text-emerald-300 font-semibold">{mobileUrl}</span>
+              <span className="text-[10px] px-1.5 py-0.2 rounded bg-slate-900 text-slate-400 group-hover:text-emerald-300">
+                {copiedMobile ? 'Tersalin!' : 'HP'}
+              </span>
+            </button>
+          )}
 
           {/* Mobile Menu Button */}
           <div className="md:hidden flex items-center gap-1.5">
