@@ -69,10 +69,17 @@ export async function GET() {
       success: true,
       data: {
         totalKK,
+        totalWarga: totalWargaAktif,
         totalWargaAktif,
+        totalMeninggal: totalWargaMeninggal,
         totalWargaMeninggal,
+        totalPindah: totalWargaPindah,
         totalWargaPindah,
         totalPendingScan,
+        gender: {
+          laki: pria,
+          perempuan: wanita,
+        },
         demografi: {
           pria,
           wanita,
@@ -80,6 +87,10 @@ export async function GET() {
           anak,
           produktif,
           lansia,
+        },
+        statusKK: {
+          tetap: hunianTetap,
+          kontrak: hunianKontrak,
         },
         hunian: {
           tetap: hunianTetap,

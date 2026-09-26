@@ -147,40 +147,40 @@ export default function DashboardPage() {
       {/* 1. NOTIFIKASI SINKRONISASI (Khusus Aplikasi Lokal Desktop) */}
       {!isPublicWeb && (
         <div
-          className={`p-4 sm:p-5 rounded-2xl border flex flex-col md:flex-row items-start md:items-center justify-between gap-4 shadow-md transition-all ${
+          className={`p-5 rounded-2xl border-2 flex flex-col md:flex-row items-start md:items-center justify-between gap-4 shadow-md transition-all ${
             syncState.needsSync
-              ? 'bg-amber-950/40 border-amber-500/60 text-amber-200'
-              : 'bg-emerald-950/20 border-emerald-500/30 text-emerald-200'
+              ? 'bg-amber-500/10 dark:bg-amber-950/40 border-amber-500/80 text-amber-950 dark:text-amber-200'
+              : 'bg-emerald-500/10 dark:bg-emerald-950/40 border-emerald-500/60 text-emerald-950 dark:text-emerald-200'
           }`}
         >
           <div className="flex items-start sm:items-center gap-3.5">
             <div
-              className={`p-2.5 rounded-xl shrink-0 ${
+              className={`p-3 rounded-xl shrink-0 ${
                 syncState.needsSync
-                  ? 'bg-amber-500/20 text-amber-400 border border-amber-500/40'
-                  : 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/40'
+                  ? 'bg-amber-500 text-slate-950 shadow-md shadow-amber-500/20'
+                  : 'bg-emerald-600 text-white shadow-md shadow-emerald-600/20'
               }`}
             >
               <RefreshCw className={`w-5 h-5 ${isSyncing ? 'animate-spin' : ''}`} />
             </div>
             <div>
               <div className="flex items-center gap-2">
-                <h4 className="text-sm sm:text-base font-bold text-white">
+                <h4 className="text-sm sm:text-base font-bold text-slate-900 dark:text-white">
                   {syncState.needsSync
                     ? 'Data Lokal Belum Disinkronkan ke Web Publik'
                     : 'Data Lokal Sinkron dengan Web Publik'}
                 </h4>
                 {syncState.needsSync ? (
-                  <span className="px-2 py-0.5 rounded-full text-[10px] font-extrabold bg-amber-500 text-slate-950 uppercase tracking-wider animate-pulse">
+                  <span className="px-2.5 py-0.5 rounded-full text-[10px] font-extrabold bg-amber-500 text-slate-950 uppercase tracking-wider animate-pulse">
                     Perlu Sinkron
                   </span>
                 ) : (
-                  <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-500/20 text-emerald-300 border border-emerald-500/40">
+                  <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300 border border-emerald-300 dark:border-emerald-800">
                     Aktual
                   </span>
                 )}
               </div>
-              <p className="text-xs text-slate-300 mt-1">
+              <p className="text-xs text-slate-600 dark:text-slate-300 mt-1">
                 {syncState.needsSync
                   ? 'Terdapat penambahan, perubahan, atau penghapusan data kependudukan lokal yang belum diteruskan ke server online.'
                   : syncState.lastSyncedAt
@@ -210,26 +210,34 @@ export default function DashboardPage() {
 
       {/* 2. JAMINAN PRIVASI DATA PADA WEB PUBLIK (UU PDP No. 27/2022) */}
       {isPublicWeb && (
-        <div className="p-4 sm:p-5 rounded-2xl border border-emerald-500/30 bg-emerald-950/25 text-emerald-200 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 shadow-md">
-          <div className="flex items-start sm:items-center gap-3.5">
-            <div className="p-2.5 rounded-xl bg-emerald-500/20 text-emerald-400 border border-emerald-500/40 shrink-0">
-              <ShieldCheck className="w-5 h-5" />
+        <div className="p-5 sm:p-6 rounded-2xl bg-white dark:bg-slate-900 border-2 border-emerald-500/50 shadow-xl flex flex-col md:flex-row items-start md:items-center justify-between gap-5 transition">
+          <div className="flex items-start sm:items-center gap-4">
+            <div className="w-12 h-12 rounded-2xl bg-emerald-600 text-white flex items-center justify-center shrink-0 shadow-md shadow-emerald-600/30">
+              <ShieldCheck className="w-6 h-6" />
             </div>
-            <div>
-              <h4 className="text-sm sm:text-base font-bold text-white">
+            <div className="space-y-1">
+              <div className="flex items-center gap-2">
+                <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300 border border-emerald-300 dark:border-emerald-800">
+                  Resmi &amp; Terlindungi
+                </span>
+                <span className="text-[11px] text-slate-500 dark:text-slate-400 font-medium hidden sm:inline">
+                  Amanat UU PDP No. 27/2022
+                </span>
+              </div>
+              <h3 className="text-base sm:text-lg font-extrabold text-slate-900 dark:text-white tracking-tight">
                 Dashboard Resmi Informasi Kependudukan RT 03 / RW 03
-              </h4>
-              <p className="text-xs text-slate-300 mt-0.5">
-                Situs ini hanya berfungsi sebagai portal informasi publik terbuka. Data pribadi sensitif (NIK, Nomor Kartu Keluarga, dan dokumen scan) disaring dan dilindungi sesuai amanat UU PDP No. 27 Tahun 2022.
+              </h3>
+              <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-300 leading-relaxed max-w-2xl">
+                Situs web ini beroperasi khusus sebagai portal informasi kependudukan publik terbuka (read-only). Data privasi warga seperti NIK, Nomor KK, dan berkas fisik scan tidak dipublikasikan secara umum guna menjamin kerahasiaan dan privasi warga.
               </p>
             </div>
           </div>
           <Link
             href="/publik"
-            className="px-5 py-2.5 bg-emerald-500 hover:bg-emerald-600 text-slate-950 font-bold text-xs rounded-xl shadow-md transition shrink-0 flex items-center gap-1.5 self-stretch sm:self-auto justify-center"
+            className="px-5 py-3 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-bold text-xs sm:text-sm rounded-xl shadow-lg shadow-emerald-600/25 transition shrink-0 flex items-center gap-2 self-stretch md:self-auto justify-center group"
           >
             <span>Buka Data Warga Publik</span>
-            <ArrowRight className="w-4 h-4" />
+            <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
           </Link>
         </div>
       )}
@@ -489,7 +497,7 @@ export default function DashboardPage() {
               {stats?.totalKK || 0}
             </div>
             <div className="text-[11px] text-slate-400">
-              {stats?.statusKK?.tetap || 0} Tetap &bull; {stats?.statusKK?.kontrak || 0} Kontrak
+              {stats?.hunian?.tetap ?? stats?.statusKK?.tetap ?? 0} Tetap &bull; {stats?.hunian?.kontrak ?? stats?.statusKK?.kontrak ?? 0} Kontrak
             </div>
           </div>
           <div className="w-12 h-12 rounded-xl bg-emerald-50 dark:bg-emerald-950/50 flex items-center justify-center text-emerald-600">
@@ -504,11 +512,11 @@ export default function DashboardPage() {
               Warga Aktif
             </span>
             <div className="text-3xl font-extrabold text-slate-900 dark:text-white flex items-baseline gap-1.5">
-              <span>{stats?.totalWarga || 0}</span>
+              <span>{stats?.totalWargaAktif ?? stats?.totalWarga ?? 0}</span>
               <span className="text-xs font-normal text-slate-400">Jiwa</span>
             </div>
             <div className="text-[11px] text-slate-400">
-              {stats?.gender?.laki || 0} Laki-laki &bull; {stats?.gender?.perempuan || 0} Perempuan
+              {stats?.demografi?.pria ?? stats?.gender?.laki ?? 0} Laki-laki &bull; {stats?.demografi?.wanita ?? stats?.gender?.perempuan ?? 0} Perempuan
             </div>
           </div>
           <div className="w-12 h-12 rounded-xl bg-blue-50 dark:bg-blue-950/50 flex items-center justify-center text-blue-600">
@@ -523,7 +531,7 @@ export default function DashboardPage() {
               Catatan Kematian
             </span>
             <div className="text-3xl font-extrabold text-slate-900 dark:text-white flex items-baseline gap-1.5">
-              <span>{stats?.totalMeninggal || 0}</span>
+              <span>{stats?.totalWargaMeninggal ?? stats?.totalMeninggal ?? 0}</span>
               <span className="text-xs font-normal text-slate-400">Jiwa</span>
             </div>
             <div className="text-[11px] text-slate-400">
@@ -542,7 +550,7 @@ export default function DashboardPage() {
               Warga Pindah Keluar
             </span>
             <div className="text-3xl font-extrabold text-slate-900 dark:text-white flex items-baseline gap-1.5">
-              <span>{stats?.totalPindah || 0}</span>
+              <span>{stats?.totalWargaPindah ?? stats?.totalPindah ?? 0}</span>
               <span className="text-xs font-normal text-slate-400">Jiwa</span>
             </div>
             <div className="text-[11px] text-slate-400">
