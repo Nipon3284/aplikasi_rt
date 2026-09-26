@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/db';
+import { markNeedsSync } from '@/lib/sync-state';
 
 export async function GET(
   req: NextRequest,
@@ -34,6 +35,7 @@ export async function PUT(
       where: { nik: params.nik },
       data: body,
     });
+    markNeedsSync();
     return NextResponse.json({ success: true, data: updated });
   } catch (error: any) {
     return NextResponse.json({ success: false, error: error.message }, { status: 500 });
@@ -56,7 +58,7 @@ export async function DELETE(
     const no_kk = warga.no_kk;
     let kkDeleted = false;
 
-    await prisma.$transaction(async (tx) => {
+    await prisma.$transaction(async (tx: any) => {
       // 1. Hapus riwayat mutasi terkait warga ini
       await tx.riwayatMutasi.deleteMany({
         where: { nik: params.nik },
@@ -91,6 +93,8 @@ export async function DELETE(
         kkDeleted = true;
       }
     });
+
+    markNeedsSync();
 
     return NextResponse.json({ 
       success: true, 

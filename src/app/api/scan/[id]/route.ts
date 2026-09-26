@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/db';
 import { extractKKFromImage } from '@/lib/gemini-ocr';
+import { markNeedsSync } from '@/lib/sync-state';
 import fs from 'fs';
 import path from 'path';
 
@@ -36,7 +37,7 @@ export async function PUT(
     }
 
     // Jalankan transaksi database: Simpan KK dan seluruh Anggota
-    const result = await prisma.$transaction(async (tx) => {
+    const result = await prisma.$transaction(async (tx: any) => {
       // Upsert Kartu Keluarga
       const savedKK = await tx.kartuKeluarga.upsert({
         where: { no_kk: kkData.no_kk },
@@ -131,6 +132,8 @@ export async function PUT(
 
       return savedKK;
     });
+
+    markNeedsSync();
 
     return NextResponse.json({
       success: true,

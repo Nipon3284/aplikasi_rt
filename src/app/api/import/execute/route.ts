@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/db';
 import { KKImportItem } from '@/lib/excel-service';
+import { markNeedsSync } from '@/lib/sync-state';
 
 export async function POST(req: NextRequest) {
   try {
@@ -20,7 +21,7 @@ export async function POST(req: NextRequest) {
     let updatedWargaCount = 0;
     let skippedCount = 0;
 
-    await prisma.$transaction(async (tx) => {
+    await prisma.$transaction(async (tx: any) => {
       for (const kkItem of kkItems) {
         // 1. Eksekusi Kartu Keluarga
         if (kkItem.action === 'CREATE') {
@@ -148,6 +149,10 @@ export async function POST(req: NextRequest) {
         }
       }
     });
+
+    if (createdKKCount > 0 || updatedKKCount > 0 || createdWargaCount > 0 || updatedWargaCount > 0) {
+      markNeedsSync();
+    }
 
     return NextResponse.json({
       success: true,

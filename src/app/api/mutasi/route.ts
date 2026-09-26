@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/db';
+import { markNeedsSync } from '@/lib/sync-state';
 
 export async function GET(req: NextRequest) {
   try {
@@ -59,7 +60,7 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const result = await prisma.$transaction(async (tx) => {
+    const result = await prisma.$transaction(async (tx: any) => {
       // 1. Simpan catatan mutasi
       const mutasi = await tx.riwayatMutasi.create({
         data: {
@@ -98,6 +99,8 @@ export async function POST(req: NextRequest) {
 
       return mutasi;
     });
+
+    markNeedsSync();
 
     return NextResponse.json({
       success: true,

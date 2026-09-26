@@ -47,7 +47,7 @@ export async function GET() {
     let totalLansia = 0;
     let sumAge = 0;
 
-    const wargaPublik = rawWarga.map((w, index) => {
+    const wargaPublik = rawWarga.map((w: any, index: number) => {
       const age = calculateAge(w.tanggal_lahir);
       const category = getAgeCategory(age);
       

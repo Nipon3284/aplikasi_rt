@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, Suspense } from 'react';
+import React, { useState, useEffect, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { 
@@ -27,6 +27,25 @@ function LoginForm() {
   const [loading, setLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');
   const [successMsg, setSuccessMsg] = useState('');
+
+  const isPublicWeb =
+    process.env.NEXT_PUBLIC_IS_PUBLIC_WEB === 'true' ||
+    (typeof window !== 'undefined' && window.location.hostname.includes('vercel.app'));
+
+  useEffect(() => {
+    // Pada web publik, sistem login dinonaktifkan sepenuhnya
+    if (isPublicWeb) {
+      router.replace('/');
+    }
+  }, [isPublicWeb, router]);
+
+  if (isPublicWeb) {
+    return (
+      <div className="min-h-[85vh] flex items-center justify-center text-slate-400 text-xs">
+        Mengalihkan ke Dashboard Publik...
+      </div>
+    );
+  }
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -70,13 +89,13 @@ function LoginForm() {
     <div className="min-h-[85vh] flex items-center justify-center px-4 py-12">
       <div className="max-w-md w-full space-y-6">
         
-        {/* Tombol Kembali ke Web Warga */}
+        {/* Tombol Kembali ke Dashboard */}
         <Link 
-          href="/publik" 
+          href="/" 
           className="inline-flex items-center gap-2 text-xs font-semibold text-slate-500 hover:text-emerald-600 transition"
         >
           <ArrowLeft className="w-4 h-4" />
-          <span>Kembali ke Halaman Web Warga</span>
+          <span>Kembali ke Halaman Dashboard</span>
         </Link>
 
         {/* Card Login */}
@@ -97,7 +116,7 @@ function LoginForm() {
                 <span>Portal Pengurus RT 003 / RW 003</span>
               </div>
               <h2 className="text-xl sm:text-2xl font-extrabold text-slate-900 dark:text-white">
-                Masuk Sistem Admin
+                Masuk Sistem Admin Lokal
               </h2>
               <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
                 Akses penuh pengelolaan berkas KK, scan AI, mutasi, dan cetak surat
@@ -202,7 +221,7 @@ export default function LoginPage() {
   return (
     <Suspense fallback={
       <div className="min-h-[85vh] flex items-center justify-center text-slate-400 text-xs">
-        Memuat portal login...
+        Memuat...
       </div>
     }>
       <LoginForm />

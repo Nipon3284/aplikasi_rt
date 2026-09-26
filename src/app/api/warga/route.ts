@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/db';
+import { markNeedsSync } from '@/lib/sync-state';
 
 export async function GET(req: NextRequest) {
   try {
@@ -55,8 +56,10 @@ export async function POST(req: NextRequest) {
     const created = await prisma.warga.create({
       data: body,
     });
+    markNeedsSync();
     return NextResponse.json({ success: true, data: created });
   } catch (error: any) {
     return NextResponse.json({ success: false, error: error.message }, { status: 500 });
   }
 }
+
