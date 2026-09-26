@@ -3,8 +3,9 @@ generator client {
 }
 
 datasource db {
-  provider = "sqlite"
-  url      = env("DATABASE_URL")
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
 }
 
 model KartuKeluarga {
@@ -80,5 +81,3 @@ model ScanQueue {
   verified_at        DateTime?
   no_kk_result       String?
 }
-
-
