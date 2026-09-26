@@ -38,6 +38,9 @@ prisma/*.db-journal
 
 # user uploads
 public/uploads/*
+
+# local data backups
+data/
 !public/uploads/.gitkeep
 
 # vercel

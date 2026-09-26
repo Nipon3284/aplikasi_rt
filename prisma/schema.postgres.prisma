@@ -1,0 +1,83 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+model KartuKeluarga {
+  no_kk            String         @id
+  kepala_keluarga  String
+  alamat           String
+  rt               String         @default("001")
+  rw               String         @default("001")
+  kelurahan        String         @default("Kelurahan")
+  kecamatan        String         @default("Kecamatan")
+  kabupaten_kota   String         @default("Kota")
+  provinsi         String         @default("Provinsi")
+  kode_pos         String?
+  no_rumah         String?
+  blok             String?
+  status_hunian    String         @default("Tetap") // Tetap, Kontrak, Kos
+  tgl_dikeluarkan  String?
+  createdAt        DateTime       @default(now())
+  updatedAt        DateTime       @updatedAt
+
+  anggota          Warga[]
+}
+
+model Warga {
+  nik                String         @id
+  no_kk              String
+  nama_lengkap       String
+  jenis_kelamin      String         // LAKI-LAKI, PEREMPUAN
+  tempat_lahir       String
+  tanggal_lahir      String         // YYYY-MM-DD
+  agama              String         // ISLAM, KRISTEN, KATOLIK, HINDU, BUDDHA, KHONGHUCU, LAINNYA
+  pendidikan         String         // SD, SMP, SMA/SMK, D3, S1, S2, S3, TIDAK/BELUM SEKOLAH
+  pekerjaan          String
+  status_perkawinan  String         // BELUM KAWIN, KAWIN, CERAI HIDUP, CERAI MATI
+  status_hubungan    String         // KEPALA KELUARGA, SUAMI, ISTRI, ANAK, MENANTU, CUCU, ORANG TUA, MERTUA, FAMILI LAIN, PEMBANTU, LAINNYA
+  kewarganegaraan    String         @default("WNI")
+  nama_ayah          String?
+  nama_ibu           String?
+  status_warga       String         @default("Aktif") // Aktif, Meninggal, Pindah
+  no_telp            String?
+  golongan_darah     String?
+  createdAt          DateTime       @default(now())
+  updatedAt          DateTime       @updatedAt
+
+  kartu_keluarga     KartuKeluarga  @relation(fields: [no_kk], references: [no_kk], onDelete: Cascade)
+  mutasi             RiwayatMutasi[]
+}
+
+model RiwayatMutasi {
+  id                 String         @id @default(uuid())
+  nik                String?
+  nama_warga         String
+  no_kk              String?
+  jenis_mutasi       String         // Kematian, Pindah Keluar, Pindah Masuk, Kelahiran
+  tanggal_kejadian   String         // YYYY-MM-DD
+  keterangan         String?
+  no_surat           String?
+  bukti_dokumen      String?
+  dicatat_oleh       String         @default("Ketua RT")
+  createdAt          DateTime       @default(now())
+
+  warga              Warga?         @relation(fields: [nik], references: [nik], onDelete: SetNull)
+}
+
+model ScanQueue {
+  id                 String         @id @default(uuid())
+  image_url          String
+  filename           String
+  status             String         @default("PENDING") // PENDING, VERIFIED, REJECTED
+  extracted_json     String         // Data JSON hasil scan
+  confidence_score   Float          @default(0.0)
+  created_at         DateTime       @default(now())
+  verified_at        DateTime?
+  no_kk_result       String?
+}
