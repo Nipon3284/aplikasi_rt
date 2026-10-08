@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import Link from 'next/link';
 import { 
   UserCheck, 
@@ -31,7 +31,7 @@ export default function KKListPage() {
     setTimeout(() => setToastMessage(''), 4000);
   };
 
-  const fetchKK = async () => {
+  const fetchKK = useCallback(async () => {
     setLoading(true);
     try {
       const res = await fetch(`/api/kk?search=${encodeURIComponent(search)}`);
@@ -44,11 +44,11 @@ export default function KKListPage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [search]);
 
   useEffect(() => {
     fetchKK();
-  }, []);
+  }, [fetchKK]);
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();

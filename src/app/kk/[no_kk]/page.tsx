@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import Link from 'next/link';
 import { 
   ArrowLeft, 
@@ -41,7 +41,7 @@ export default function KKDetailPage({ params }: KKDetailPageProps) {
     status_hunian: 'Tetap',
   });
 
-  const fetchDetail = async () => {
+  const fetchDetail = useCallback(async () => {
     setLoading(true);
     try {
       const res = await fetch(`/api/kk/${params.no_kk}`);
@@ -63,11 +63,11 @@ export default function KKDetailPage({ params }: KKDetailPageProps) {
     } finally {
       setLoading(false);
     }
-  };
+  }, [params.no_kk]);
 
   useEffect(() => {
     fetchDetail();
-  }, [params.no_kk]);
+  }, [fetchDetail]);
 
   const handleUpdateKK = async (e: React.FormEvent) => {
     e.preventDefault();

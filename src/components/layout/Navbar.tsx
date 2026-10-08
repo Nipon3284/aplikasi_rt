@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { 
@@ -41,7 +41,7 @@ export default function Navbar() {
     process.env.NEXT_PUBLIC_IS_PUBLIC_WEB === 'true' ||
     (typeof window !== 'undefined' && window.location.hostname.includes('vercel.app'));
 
-  const fetchSyncStatus = async () => {
+  const fetchSyncStatus = useCallback(async () => {
     if (isPublicWeb) return;
     try {
       const res = await fetch('/api/sync');
@@ -56,9 +56,9 @@ export default function Navbar() {
     } catch {
       // ignore
     }
-  };
+  }, [isPublicWeb]);
 
-  const fetchPending = async () => {
+  const fetchPending = useCallback(async () => {
     if (isPublicWeb) return;
     try {
       const res = await fetch('/api/dashboard');
@@ -69,9 +69,9 @@ export default function Navbar() {
     } catch {
       // ignore
     }
-  };
+  }, [isPublicWeb]);
 
-  const fetchSystemInfo = async () => {
+  const fetchSystemInfo = useCallback(async () => {
     if (isPublicWeb) return;
     try {
       const res = await fetch('/api/system-info');
@@ -82,7 +82,7 @@ export default function Navbar() {
     } catch {
       // ignore
     }
-  };
+  }, [isPublicWeb]);
 
   useEffect(() => {
     if (!isPublicWeb) {
@@ -95,7 +95,7 @@ export default function Navbar() {
       }, 15000);
       return () => clearInterval(interval);
     }
-  }, [pathname, isPublicWeb]);
+  }, [pathname, isPublicWeb, fetchSyncStatus, fetchPending, fetchSystemInfo]);
 
   const handleCopyMobileUrl = () => {
     if (!mobileUrl) return;

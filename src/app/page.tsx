@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import Link from 'next/link';
 import { 
   Users, 
@@ -48,7 +48,7 @@ export default function DashboardPage() {
     process.env.NEXT_PUBLIC_IS_PUBLIC_WEB === 'true' ||
     (typeof window !== 'undefined' && window.location.hostname.includes('vercel.app'));
 
-  const fetchSyncState = async () => {
+  const fetchSyncState = useCallback(async () => {
     if (isPublicWeb) return;
     try {
       const res = await fetch('/api/sync');
@@ -63,7 +63,7 @@ export default function DashboardPage() {
     } catch {
       // ignore
     }
-  };
+  }, [isPublicWeb]);
 
   const handleSyncToCloud = async () => {
     if (isSyncing) return;
@@ -84,7 +84,7 @@ export default function DashboardPage() {
     }
   };
 
-  const fetchStats = async () => {
+  const fetchStats = useCallback(async () => {
     try {
       const res = await fetch('/api/dashboard');
       const data = await res.json();
@@ -94,9 +94,9 @@ export default function DashboardPage() {
     } catch (e) {
       console.error(e);
     }
-  };
+  }, []);
 
-  const fetchSystemInfo = async () => {
+  const fetchSystemInfo = useCallback(async () => {
     if (isPublicWeb) return;
     try {
       const res = await fetch('/api/system-info');
@@ -124,7 +124,7 @@ export default function DashboardPage() {
     } catch (e) {
       console.error(e);
     }
-  };
+  }, [isPublicWeb]);
 
   useEffect(() => {
     fetchStats();
@@ -132,7 +132,7 @@ export default function DashboardPage() {
       fetchSyncState();
       fetchSystemInfo();
     }
-  }, [isPublicWeb]);
+  }, [isPublicWeb, fetchStats, fetchSyncState, fetchSystemInfo]);
 
   const handleCopyMobileUrl = () => {
     if (!mobileInfo?.mobileUrl) return;
