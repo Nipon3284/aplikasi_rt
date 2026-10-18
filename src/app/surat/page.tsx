@@ -15,16 +15,16 @@ export default function SuratPage() {
   const [selectedNik, setSelectedNik] = useState('');
   const [jenisSurat, setJenisSurat] = useState('Surat Pengantar Pembuatan KTP / KK');
   const [keperluan, setKeperluan] = useState('Permohonan pembuatan KTP Baru di Kelurahan');
-  const [nomorSurat, setNomorSurat] = useState('470 / 012 / RT.003 / 2026');
+  const [nomorSurat, setNomorSurat] = useState('470 / 012 / RT.03 / 2026');
   
-  // Custom Kop Surat & Penandatangan
-  const [namaRT, setNamaRT] = useState('003');
-  const [namaRW, setNamaRW] = useState('003');
-  const [namaKelurahan, setNamaKelurahan] = useState('SUKAMAJU');
-  const [namaKecamatan, setNamaKecamatan] = useState('CILODONG');
-  const [namaKota, setNamaKota] = useState('DEPOK');
-  const [alamatSekretariat, setAlamatSekretariat] = useState('Sekretariat: Lingkungan RT 003 / RW 003, Jawa Barat');
-  const [namaKetuaRT, setNamaKetuaRT] = useState('BAMBANG SUTRISNO');
+  // Custom Kop Surat & Penandatangan Resmi RT 03 / RW 03
+  const [namaRT, setNamaRT] = useState('03');
+  const [namaRW, setNamaRW] = useState('03');
+  const [namaKelurahan, setNamaKelurahan] = useState('Tambaksari Kidul');
+  const [namaKecamatan, setNamaKecamatan] = useState('Kembaran');
+  const [namaKota, setNamaKota] = useState('Kabupaten Banyumas');
+  const [alamatSekretariat, setAlamatSekretariat] = useState('Dusun I, Tambaksari Kidul, Kec. Kembaran, Kabupaten Banyumas, Jawa Tengah 53182');
+  const [namaKetuaRT, setNamaKetuaRT] = useState('Masngud');
   const [showKopSettings, setShowKopSettings] = useState(false);
 
   const [tanggalSurat] = useState(new Date().toLocaleDateString('id-ID', {
@@ -309,7 +309,7 @@ export default function SuratPage() {
 
               {/* Pembuka */}
               <p className="text-xs leading-relaxed mb-4 text-justify font-sans">
-                Yang bertanda tangan di bawah ini Ketua RT {namaRT} / RW {namaRW} {namaKelurahan ? `Kelurahan ${namaKelurahan}, Kecamatan ${namaKecamatan}` : ''} {namaKota ? namaKota : ''}, menerangkan dengan sebenarnya bahwa:
+                Yang bertanda tangan di bawah ini Ketua RT {namaRT} / RW {namaRW}{namaKelurahan ? `, Desa/Kelurahan ${namaKelurahan}, Kecamatan ${namaKecamatan}, ${namaKota}` : ''}, menerangkan dengan sebenarnya bahwa:
               </p>
 
               {/* Data Warga Pemohon */}
@@ -377,7 +377,7 @@ export default function SuratPage() {
             <div className="pt-10 font-sans text-xs flex justify-end">
               <div className="text-center w-64 space-y-16">
                 <div>
-                  <p>{namaKota ? namaKota.replace('KOTA ', '').replace('KABUPATEN ', '') : 'Tempat'}, {tanggalSurat}</p>
+                  <p>{namaKota ? namaKota.replace(/^(kabupaten|kota)\s+/i, '') : 'Banyumas'}, {tanggalSurat}</p>
                   <p className="font-semibold mt-1">Ketua RT {namaRT} / RW {namaRW}</p>
                 </div>
 

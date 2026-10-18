@@ -258,15 +258,25 @@ export default function DashboardPage() {
               : 'Kelola data Kartu Keluarga, validasi hasil scan berkas fisik fotokopi KK, pantau mutasi warga (pindah & kematian), serta cetak surat pengantar secara instan.'}
           </p>
 
-          <div className="pt-2 flex flex-wrap gap-3">
+          <div className="pt-2 flex flex-wrap gap-2.5 sm:gap-3">
             {isPublicWeb ? (
-              <Link
-                href="/publik"
-                className="px-5 py-2.5 bg-emerald-500 hover:bg-emerald-600 text-slate-950 font-bold text-xs rounded-xl shadow-lg transition flex items-center gap-2"
-              >
-                <Globe className="w-4 h-4" />
-                <span>Lihat Data Warga Terbuka (Publik)</span>
-              </Link>
+              <>
+                <Link
+                  href="/publik"
+                  className="px-5 py-2.5 bg-emerald-500 hover:bg-emerald-600 text-slate-950 font-bold text-xs rounded-xl shadow-lg transition flex items-center gap-2"
+                >
+                  <Globe className="w-4 h-4" />
+                  <span>Lihat Data Warga Terbuka (Publik)</span>
+                </Link>
+
+                <Link
+                  href="/surat"
+                  className="px-5 py-2.5 bg-slate-800/90 hover:bg-slate-700 text-white font-semibold text-xs rounded-xl border border-slate-700 hover:border-emerald-500/50 shadow-md transition flex items-center gap-2 group"
+                >
+                  <FileText className="w-4 h-4 text-emerald-400 group-hover:scale-110 transition-transform" />
+                  <span>Layanan Surat Pengantar RT</span>
+                </Link>
+              </>
             ) : (
               <>
                 <Link
@@ -287,10 +297,10 @@ export default function DashboardPage() {
 
                 <Link
                   href="/surat"
-                  className="px-4 py-2.5 bg-slate-800/80 hover:bg-slate-700 text-white font-medium text-xs rounded-xl border border-slate-700 transition flex items-center gap-2"
+                  className="px-4 py-2.5 bg-slate-800/80 hover:bg-slate-700 text-white font-medium text-xs rounded-xl border border-slate-700 hover:border-emerald-500/50 transition flex items-center gap-2 group"
                 >
-                  <FileText className="w-4 h-4" />
-                  <span>Buat Surat Pengantar</span>
+                  <FileText className="w-4 h-4 text-emerald-400 group-hover:scale-110 transition-transform" />
+                  <span>Layanan Surat Pengantar RT</span>
                 </Link>
               </>
             )}

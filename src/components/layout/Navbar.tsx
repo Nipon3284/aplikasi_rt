@@ -177,7 +177,6 @@ export default function Navbar() {
     { href: '/warga', label: 'Data Warga', icon: Users },
     { href: '/kk', label: 'Kartu Keluarga', icon: UserCheck },
     { href: '/mutasi', label: 'Mutasi', icon: History },
-    { href: '/surat', label: 'Surat', icon: FileText },
     { href: '/import', label: 'Import', icon: UploadCloud },
     { href: '/publik', label: 'Web Publik', icon: Globe },
   ];
@@ -191,13 +190,13 @@ export default function Navbar() {
   const navItems: NavItem[] = showAdminMenu ? adminNavItems : publicNavItems;
 
   return (
-    <header className="sticky top-0 z-50 bg-slate-900 text-white shadow-md border-b border-slate-800">
-      <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-between h-16 gap-2 sm:gap-4">
+    <header className="sticky top-0 z-50 bg-slate-900 text-white shadow-md border-b border-slate-800 w-full overflow-hidden">
+      <div className="w-full max-w-7xl mx-auto px-3 sm:px-4 lg:px-6">
+        <div className="flex items-center justify-between h-16 gap-2 sm:gap-3">
           
           {/* Logo & Judul RT */}
-          <Link href="/" className="flex items-center space-x-2.5 sm:space-x-3 group shrink-0">
-            <div className="relative w-10 h-10 sm:w-11 sm:h-11 rounded-xl overflow-hidden shadow-md border border-amber-500/40 bg-white/10 shrink-0 group-hover:scale-105 transition">
+          <Link href="/" className="flex items-center space-x-2 sm:space-x-2.5 group shrink-0">
+            <div className="relative w-9 h-9 sm:w-10 sm:h-10 rounded-xl overflow-hidden shadow-md border border-amber-500/40 bg-white/10 shrink-0 group-hover:scale-105 transition">
               <img 
                 src="/logo.jpg" 
                 alt="Logo RT 3 RW 3 Istimewa" 
@@ -205,13 +204,13 @@ export default function Navbar() {
               />
             </div>
             <div className="shrink-0 flex flex-col justify-center">
-              <div className="font-bold text-sm sm:text-base tracking-wide flex items-center gap-1.5 sm:gap-2 whitespace-nowrap">
+              <div className="font-bold text-sm sm:text-base tracking-wide flex items-center gap-1.5 whitespace-nowrap">
                 <span>SI-WARGA RT</span>
-                <span className="text-[10px] sm:text-[11px] bg-gradient-to-r from-amber-500/20 to-emerald-500/20 text-amber-300 px-2 sm:px-2.5 py-0.5 rounded-full border border-amber-500/40 font-semibold whitespace-nowrap">
+                <span className="text-[10px] sm:text-[11px] bg-gradient-to-r from-amber-500/20 to-emerald-500/20 text-amber-300 px-2 py-0.5 rounded-full border border-amber-500/40 font-semibold whitespace-nowrap">
                   RT 03 / RW 03
                 </span>
               </div>
-              <div className="text-[10px] sm:text-[11px] text-slate-400 font-medium whitespace-nowrap hidden md:block">
+              <div className="text-[10px] sm:text-[11px] text-slate-400 font-medium whitespace-nowrap hidden xl:block">
                 {isPublicWeb
                   ? isAdminLoggedIn
                     ? 'Portal Administrasi Online Pengurus RT'
@@ -230,7 +229,7 @@ export default function Navbar() {
                 <Link
                   key={item.href}
                   href={item.href}
-                  className={`relative flex items-center space-x-1.5 xl:space-x-2 px-2.5 xl:px-3 py-1.5 xl:py-2 rounded-lg text-xs xl:text-sm font-medium transition whitespace-nowrap ${
+                  className={`relative flex items-center space-x-1 xl:space-x-1.5 px-2 xl:px-2.5 py-1.5 rounded-lg text-xs xl:text-sm font-medium transition whitespace-nowrap ${
                     isActive
                       ? 'bg-slate-800 text-emerald-400 font-semibold shadow-inner'
                       : 'text-slate-300 hover:bg-slate-800/60 hover:text-white'
@@ -249,37 +248,39 @@ export default function Navbar() {
           </nav>
 
           {/* Right Action: Sisi Publik vs Sisi Lokal */}
-          <div className="hidden lg:flex items-center gap-2.5 shrink-0">
+          <div className="hidden lg:flex items-center gap-1.5 xl:gap-2 shrink-0">
             {isPublicWeb ? (
               // Tampilan pada Web Publik
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-1.5 xl:gap-2">
                 {isAdminLoggedIn ? (
                   <>
-                    <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-amber-500/15 border border-amber-500/30 text-amber-300 text-xs font-semibold">
-                      <ShieldCheck className="w-3.5 h-3.5 text-amber-400" />
-                      <span className="max-w-[130px] truncate">{currentUser?.name || 'Admin'}</span>
+                    <div className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl bg-amber-500/15 border border-amber-500/30 text-amber-300 text-xs font-semibold">
+                      <ShieldCheck className="w-3.5 h-3.5 text-amber-400 shrink-0" />
+                      <span className="max-w-[90px] xl:max-w-[130px] truncate" title={currentUser?.name}>
+                        {currentUser?.name || 'Masngud'}
+                      </span>
                     </div>
                     <button
                       type="button"
                       onClick={handleLogout}
-                      className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-rose-500/10 hover:bg-rose-500/20 border border-rose-500/30 text-rose-300 hover:text-rose-200 text-xs font-semibold transition"
+                      className="flex items-center gap-1.5 px-2.5 xl:px-3 py-1.5 rounded-xl bg-rose-500/15 hover:bg-rose-500/25 border border-rose-500/30 text-rose-300 hover:text-rose-100 text-xs font-semibold transition shrink-0 shadow-sm"
                       title="Keluar dari sesi Admin"
                     >
-                      <LogOut className="w-3.5 h-3.5" />
+                      <LogOut className="w-3.5 h-3.5 shrink-0" />
                       <span>Keluar</span>
                     </button>
                   </>
                 ) : (
                   <>
-                    <div className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-300 text-xs font-semibold">
-                      <Globe className="w-3.5 h-3.5 text-emerald-400" />
+                    <div className="flex items-center gap-1 px-2 py-1.5 rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-300 text-xs font-semibold">
+                      <Globe className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
                       <span>Publik</span>
                     </div>
                     <Link
                       href="/login?redirect=/warga"
-                      className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-slate-950 text-xs font-bold shadow-md transition"
+                      className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-slate-950 text-xs font-bold shadow-md transition shrink-0"
                     >
-                      <Lock className="w-3.5 h-3.5" />
+                      <Lock className="w-3.5 h-3.5 shrink-0" />
                       <span>Portal Admin</span>
                     </Link>
                   </>

@@ -9,7 +9,7 @@ export const COOKIE_NAME = 'si_warga_token';
 export const DEFAULT_ADMIN = {
   username: process.env.ADMIN_USERNAME || 'kangmasngud',
   password: process.env.ADMIN_PASSWORD || 'kangmasngud123',
-  name: 'Kang Mas Ngud (Ketua RT)',
+  name: 'Masngud (Ketua RT)',
   role: 'ADMIN' as const,
 };
 
