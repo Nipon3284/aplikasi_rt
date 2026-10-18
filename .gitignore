@@ -33,11 +33,13 @@ yarn-error.log*
 # databases
 prisma/*.db
 prisma/*.db-journal
+prisma/*.backup*
 *.db
 *.sqlite
 
 # user uploads
 public/uploads/*
+public/uploads_backup/
 
 # local data backups
 data/*
