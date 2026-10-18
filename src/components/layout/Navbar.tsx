@@ -17,7 +17,10 @@ import {
   Check, 
   Globe,
   RefreshCw,
-  Laptop
+  Laptop,
+  Lock,
+  LogOut,
+  ShieldCheck
 } from 'lucide-react';
 
 export default function Navbar() {
@@ -35,11 +38,40 @@ export default function Navbar() {
     lastSyncedAt: null,
   });
   const [isSyncing, setIsSyncing] = useState(false);
+  const [currentUser, setCurrentUser] = useState<{
+    username: string;
+    role: string;
+    name: string;
+  } | null>(null);
 
   // Deteksi lingkungan: Web Publik (Vercel) vs Aplikasi Lokal (Desktop)
   const isPublicWeb =
     process.env.NEXT_PUBLIC_IS_PUBLIC_WEB === 'true' ||
     (typeof window !== 'undefined' && window.location.hostname.includes('vercel.app'));
+
+  const fetchCurrentUser = useCallback(async () => {
+    try {
+      const res = await fetch('/api/auth/me');
+      const data = await res.json();
+      if (data.authenticated && data.user) {
+        setCurrentUser(data.user);
+      } else {
+        setCurrentUser(null);
+      }
+    } catch {
+      setCurrentUser(null);
+    }
+  }, []);
+
+  const handleLogout = async () => {
+    try {
+      await fetch('/api/auth/logout', { method: 'POST' });
+      setCurrentUser(null);
+      window.location.href = '/publik';
+    } catch {
+      window.location.href = '/publik';
+    }
+  };
 
   const fetchSyncStatus = useCallback(async () => {
     if (isPublicWeb) return;
@@ -85,6 +117,7 @@ export default function Navbar() {
   }, [isPublicWeb]);
 
   useEffect(() => {
+    fetchCurrentUser();
     if (!isPublicWeb) {
       fetchSyncStatus();
       fetchPending();
@@ -95,7 +128,7 @@ export default function Navbar() {
       }, 15000);
       return () => clearInterval(interval);
     }
-  }, [pathname, isPublicWeb, fetchSyncStatus, fetchPending, fetchSystemInfo]);
+  }, [pathname, isPublicWeb, fetchCurrentUser, fetchSyncStatus, fetchPending, fetchSystemInfo]);
 
   const handleCopyMobileUrl = () => {
     if (!mobileUrl) return;
@@ -123,27 +156,39 @@ export default function Navbar() {
     }
   };
 
-  // Navigasi: Sisi Publik vs Sisi Lokal Administratif
-  const navItems = isPublicWeb
-    ? [
-        { href: '/', label: 'Dashboard Informasi', icon: Home },
-        { href: '/publik', label: 'Data Warga (Publik)', icon: Globe },
-      ]
-    : [
-        { href: '/', label: 'Dashboard', icon: Home },
-        { 
-          href: '/scan', 
-          label: 'Scan KK', 
-          icon: ScanLine,
-          badge: pendingCount > 0 ? pendingCount : null
-        },
-        { href: '/warga', label: 'Data Warga', icon: Users },
-        { href: '/kk', label: 'Kartu Keluarga', icon: UserCheck },
-        { href: '/mutasi', label: 'Mutasi', icon: History },
-        { href: '/surat', label: 'Surat', icon: FileText },
-        { href: '/import', label: 'Import', icon: UploadCloud },
-        { href: '/publik', label: 'Web Warga', icon: Globe },
-      ];
+  const isAdminLoggedIn = Boolean(currentUser && currentUser.role === 'ADMIN');
+  const showAdminMenu = !isPublicWeb || isAdminLoggedIn;
+
+  interface NavItem {
+    href: string;
+    label: string;
+    icon: React.ComponentType<{ className?: string }>;
+    badge?: number | null;
+  }
+
+  const adminNavItems: NavItem[] = [
+    { href: '/', label: 'Dashboard', icon: Home },
+    { 
+      href: '/scan', 
+      label: 'Scan KK', 
+      icon: ScanLine,
+      badge: pendingCount > 0 ? pendingCount : null
+    },
+    { href: '/warga', label: 'Data Warga', icon: Users },
+    { href: '/kk', label: 'Kartu Keluarga', icon: UserCheck },
+    { href: '/mutasi', label: 'Mutasi', icon: History },
+    { href: '/surat', label: 'Surat', icon: FileText },
+    { href: '/import', label: 'Import', icon: UploadCloud },
+    { href: '/publik', label: 'Web Publik', icon: Globe },
+  ];
+
+  const publicNavItems: NavItem[] = [
+    { href: '/', label: 'Dashboard Informasi', icon: Home },
+    { href: '/publik', label: 'Data Warga (Publik)', icon: Globe },
+  ];
+
+  // Navigasi: Sisi Publik vs Sisi Lokal Administratif (atau Admin saat login online)
+  const navItems: NavItem[] = showAdminMenu ? adminNavItems : publicNavItems;
 
   return (
     <header className="sticky top-0 z-50 bg-slate-900 text-white shadow-md border-b border-slate-800">
@@ -167,7 +212,11 @@ export default function Navbar() {
                 </span>
               </div>
               <div className="text-[10px] sm:text-[11px] text-slate-400 font-medium whitespace-nowrap hidden md:block">
-                {isPublicWeb ? 'Portal Informasi Publik Warga RT' : 'Aplikasi Pengelolaan Data Lokal (Offline-Ready)'}
+                {isPublicWeb
+                  ? isAdminLoggedIn
+                    ? 'Portal Administrasi Online Pengurus RT'
+                    : 'Portal Informasi Publik Warga RT'
+                  : 'Aplikasi Pengelolaan Data Lokal (Offline-Ready)'}
               </div>
             </div>
           </Link>
@@ -202,12 +251,39 @@ export default function Navbar() {
           {/* Right Action: Sisi Publik vs Sisi Lokal */}
           <div className="hidden lg:flex items-center gap-2.5 shrink-0">
             {isPublicWeb ? (
-              // Tampilan pada Web Publik (Read-Only)
+              // Tampilan pada Web Publik
               <div className="flex items-center gap-2">
-                <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-300 text-xs font-semibold">
-                  <Globe className="w-3.5 h-3.5 text-emerald-400" />
-                  <span>Portal Publik</span>
-                </div>
+                {isAdminLoggedIn ? (
+                  <>
+                    <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-amber-500/15 border border-amber-500/30 text-amber-300 text-xs font-semibold">
+                      <ShieldCheck className="w-3.5 h-3.5 text-amber-400" />
+                      <span className="max-w-[130px] truncate">{currentUser?.name || 'Admin'}</span>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={handleLogout}
+                      className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-rose-500/10 hover:bg-rose-500/20 border border-rose-500/30 text-rose-300 hover:text-rose-200 text-xs font-semibold transition"
+                      title="Keluar dari sesi Admin"
+                    >
+                      <LogOut className="w-3.5 h-3.5" />
+                      <span>Keluar</span>
+                    </button>
+                  </>
+                ) : (
+                  <>
+                    <div className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-300 text-xs font-semibold">
+                      <Globe className="w-3.5 h-3.5 text-emerald-400" />
+                      <span>Publik</span>
+                    </div>
+                    <Link
+                      href="/login?redirect=/warga"
+                      className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-slate-950 text-xs font-bold shadow-md transition"
+                    >
+                      <Lock className="w-3.5 h-3.5" />
+                      <span>Portal Admin</span>
+                    </Link>
+                  </>
+                )}
               </div>
             ) : (
               // Tampilan pada Aplikasi Lokal Desktop
@@ -313,6 +389,42 @@ export default function Navbar() {
               </Link>
             );
           })}
+
+          {/* Aksi di Mobile jika di Web Publik */}
+          {isPublicWeb && (
+            <div className="pt-2 border-t border-slate-800 mt-2 space-y-2">
+              {isAdminLoggedIn ? (
+                <>
+                  <div className="flex items-center justify-between px-3.5 py-2 rounded-xl bg-amber-500/10 border border-amber-500/20 text-xs text-amber-300">
+                    <div className="flex items-center gap-2 font-semibold">
+                      <ShieldCheck className="w-4 h-4 text-amber-400" />
+                      <span>Pengurus: {currentUser?.name}</span>
+                    </div>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setIsMobileMenuOpen(false);
+                      handleLogout();
+                    }}
+                    className="w-full flex items-center justify-center gap-2 px-3.5 py-2.5 rounded-xl bg-rose-500/20 hover:bg-rose-500/30 border border-rose-500/40 text-xs font-bold text-rose-200 transition"
+                  >
+                    <LogOut className="w-4 h-4" />
+                    <span>Keluar dari Akun Admin</span>
+                  </button>
+                </>
+              ) : (
+                <Link
+                  href="/login?redirect=/warga"
+                  onClick={() => setIsMobileMenuOpen(false)}
+                  className="w-full flex items-center justify-center gap-2 px-3.5 py-2.5 rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 text-slate-950 font-bold text-xs shadow-lg transition"
+                >
+                  <Lock className="w-4 h-4" />
+                  <span>Portal Pengurus RT (Login Admin)</span>
+                </Link>
+              )}
+            </div>
+          )}
 
           {/* Tombol Sinkronisasi di Mobile jika di mode lokal */}
           {!isPublicWeb && (

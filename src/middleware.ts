@@ -1,10 +1,11 @@
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
+import { COOKIE_NAME, verifySessionToken } from '@/lib/auth';
 
 const isPublicWeb =
   process.env.VERCEL === '1' || process.env.NEXT_PUBLIC_IS_PUBLIC_WEB === 'true';
 
-// Rute Halaman Administratif
+// Rute Halaman Administratif yang memerlukan autentikasi Admin
 const ADMIN_PAGES = [
   '/scan',
   '/kk',
@@ -14,7 +15,7 @@ const ADMIN_PAGES = [
   '/warga', // Database warga lengkap (ada NIK & tombol edit)
 ];
 
-// Rute API Administratif / Mutasi
+// Rute API Administratif / Mutasi yang memerlukan hak akses Admin
 const ADMIN_API_PREFIXES = [
   '/api/scan',
   '/api/kk',
@@ -22,7 +23,6 @@ const ADMIN_API_PREFIXES = [
   '/api/surat',
   '/api/import',
   '/api/sync',
-  '/api/auth',
   '/api/reset',
 ];
 
@@ -42,44 +42,61 @@ export async function middleware(request: NextRequest) {
   }
 
   // =========================================================================
-  // 1. ATURAN WEB PUBLIK (ONLINE DI VERCEL)
+  // 1. ATURAN WEB ONLINE (VERCEL / PUBLIC WEB)
   // =========================================================================
   if (isPublicWeb) {
-    // Pada web publik: TIDAK ADA SISTEM LOGIN
-    // Jika seseorang mencoba membuka /login, alihkan langsung ke Dashboard Publik
+    // Ambil token sesi dari cookie HTTP-Only
+    const token = request.cookies.get(COOKIE_NAME)?.value;
+    const session = token ? await verifySessionToken(token) : null;
+    const isAdmin = Boolean(session && session.role === 'ADMIN');
+
+    // Jika admin sudah login dan membuka /login, arahkan ke data warga admin
     if (pathname === '/login') {
-      return NextResponse.redirect(new URL('/', request.url));
+      if (isAdmin) {
+        return NextResponse.redirect(new URL('/warga', request.url));
+      }
+      return NextResponse.next();
     }
 
-    // Jika seseorang mencoba membuka halaman kelola admin, alihkan ke Data Warga Publik
+    // Periksa apakah mencoba mengakses halaman admin (/warga, /kk, /scan, dll)
     const isTryingAdminPage = ADMIN_PAGES.some(
       (page) => pathname === page || pathname.startsWith(`${page}/`)
     );
+
     if (isTryingAdminPage) {
-      return NextResponse.redirect(new URL('/publik', request.url));
+      if (!isAdmin) {
+        // Belum login: arahkan ke halaman login dengan parameter redirect
+        const loginUrl = new URL('/login', request.url);
+        loginUrl.searchParams.set('redirect', pathname);
+        return NextResponse.redirect(loginUrl);
+      }
+      // Sudah login: izinkan akses penuh ke halaman admin
+      return NextResponse.next();
     }
 
-    // Blokir mutasi pada /api/warga (POST/PUT/DELETE)
+    // Periksa apakah mencoba mengakses API administratif
     const isWargaMutation =
       pathname.startsWith('/api/warga') && request.method !== 'GET';
-
-    // Blokir seluruh API administratif
     const isTryingAdminApi = ADMIN_API_PREFIXES.some((prefix) =>
       pathname.startsWith(prefix)
     );
 
     if (isTryingAdminApi || isWargaMutation) {
-      return NextResponse.json(
-        {
-          success: false,
-          error:
-            'Akses Ditolak: Situs web publik hanya berfungsi sebagai dashboard informasi read-only. Pengelolaan data hanya dapat dilakukan melalui Aplikasi Desktop Lokal.',
-        },
-        { status: 403 }
-      );
+      if (!isAdmin) {
+        return NextResponse.json(
+          {
+            success: false,
+            error:
+              'Akses Ditolak: Anda harus login sebagai Pengurus RT untuk melakukan tindakan ini.',
+          },
+          { status: 401 }
+        );
+      }
+      // Sudah login: izinkan request API admin
+      return NextResponse.next();
     }
 
-    // Izinkan akses rute publik (/publik, /api/publik/*, /api/dashboard, /)
+    // Rute publik (/ , /publik , /api/dashboard , /api/publik/* , /api/auth/*)
     return NextResponse.next();
   }
 

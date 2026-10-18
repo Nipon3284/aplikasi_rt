@@ -177,7 +177,7 @@ export default function WebTampilanWargaPage() {
             {/* Tombol Akses Portal Pengurus RT */}
             <div className="flex flex-col sm:flex-row md:flex-col items-stretch sm:items-center md:items-end gap-3 shrink-0">
               <Link
-                href="/warga"
+                href="/login?redirect=/warga"
                 className="inline-flex items-center justify-center gap-2 px-5 py-3 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600 text-slate-950 font-bold text-xs sm:text-sm shadow-lg shadow-emerald-500/25 transition transform hover:-translate-y-0.5 active:translate-y-0"
               >
                 <Lock className="w-4 h-4" />

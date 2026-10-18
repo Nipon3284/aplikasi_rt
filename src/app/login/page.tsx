@@ -28,25 +28,6 @@ function LoginForm() {
   const [errorMsg, setErrorMsg] = useState('');
   const [successMsg, setSuccessMsg] = useState('');
 
-  const isPublicWeb =
-    process.env.NEXT_PUBLIC_IS_PUBLIC_WEB === 'true' ||
-    (typeof window !== 'undefined' && window.location.hostname.includes('vercel.app'));
-
-  useEffect(() => {
-    // Pada web publik, sistem login dinonaktifkan sepenuhnya
-    if (isPublicWeb) {
-      router.replace('/');
-    }
-  }, [isPublicWeb, router]);
-
-  if (isPublicWeb) {
-    return (
-      <div className="min-h-[85vh] flex items-center justify-center text-slate-400 text-xs">
-        Mengalihkan ke Dashboard Publik...
-      </div>
-    );
-  }
-
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setErrorMsg('');
@@ -116,7 +97,7 @@ function LoginForm() {
                 <span>Portal Pengurus RT 003 / RW 003</span>
               </div>
               <h2 className="text-xl sm:text-2xl font-extrabold text-slate-900 dark:text-white">
-                Masuk Sistem Admin Lokal
+                Masuk Portal Pengurus RT
               </h2>
               <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
                 Akses penuh pengelolaan berkas KK, scan AI, mutasi, dan cetak surat
