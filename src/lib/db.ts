@@ -8,8 +8,9 @@ const globalForPrisma = globalThis as unknown as {
 };
 
 function sanitizeDbUrl(raw?: string): string {
+  const encodedPass = encodeURIComponent('WargaIstimewa2026!');
   const fallback =
-    'postgresql://postgres.cgfljoyxdvgxncebwype:WargaIstimewa2026!@aws-0-ap-southeast-1.pooler.supabase.com:6543/postgres?pgbouncer=true';
+    `postgresql://postgres.cgfljoyxdvgxncebwype:${encodedPass}@aws-0-ap-southeast-1.pooler.supabase.com:6543/postgres?pgbouncer=true`;
   if (!raw) return fallback;
 
   let str = raw.trim();
@@ -41,6 +42,14 @@ function sanitizeDbUrl(raw?: string): string {
     str = str.slice(1, -1).trim();
   }
 
+  // Auto replace [YOUR-PASSWORD] placeholder if user pasted it directly from Supabase template
+  if (str.includes('[YOUR-PASSWORD]')) {
+    str = str.replace('[YOUR-PASSWORD]', encodedPass);
+  }
+  if (str.includes('WargaIstimewa2026!')) {
+    str = str.replace('WargaIstimewa2026!', encodedPass);
+  }
+
   // Ensure it starts with postgresql:// or postgres://
   if (!str.startsWith('postgresql://') && !str.startsWith('postgres://')) {
     return fallback;
@@ -53,8 +62,9 @@ if (isCloud) {
   const cleanedUrl = sanitizeDbUrl(process.env.DATABASE_URL);
   process.env.DATABASE_URL = cleanedUrl;
 
+  const encodedPass = encodeURIComponent('WargaIstimewa2026!');
   const directFallback =
-    'postgresql://postgres.cgfljoyxdvgxncebwype:WargaIstimewa2026!@aws-0-ap-southeast-1.pooler.supabase.com:5432/postgres';
+    `postgresql://postgres.cgfljoyxdvgxncebwype:${encodedPass}@aws-0-ap-southeast-1.pooler.supabase.com:5432/postgres`;
   const cleanedDirect = sanitizeDbUrl(process.env.DIRECT_URL) || directFallback;
   process.env.DIRECT_URL = cleanedDirect;
 }
