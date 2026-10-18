@@ -18,7 +18,9 @@ import {
   ShieldAlert,
   FileSpreadsheet,
   UploadCloud,
-  Download
+  Download,
+  UserCheck,
+  HeartHandshake
 } from 'lucide-react';
 
 export default function WargaPage() {
@@ -27,6 +29,13 @@ export default function WargaPage() {
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState('Aktif');
   const [genderFilter, setGenderFilter] = useState('SEMUA');
+  const [overallStats, setOverallStats] = useState({
+    totalWarga: 0,
+    aktif: 0,
+    pria: 0,
+    wanita: 0,
+    mutasi: 0,
+  });
 
   // Modal State for Quick Mutasi (Kematian / Pindah)
   const [selectedWarga, setSelectedWarga] = useState<any | null>(null);
@@ -55,6 +64,30 @@ export default function WargaPage() {
     setTimeout(() => setToastMessage(''), 4000);
   };
 
+  const fetchOverallStats = useCallback(async () => {
+    try {
+      const res = await fetch('/api/warga?status=SEMUA');
+      const data = await res.json();
+      if (data.success && Array.isArray(data.data)) {
+        const list = data.data;
+        const total = list.length;
+        const aktif = list.filter((w: any) => w.status_warga === 'Aktif').length;
+        const pria = list.filter((w: any) => w.jenis_kelamin === 'LAKI-LAKI' && w.status_warga === 'Aktif').length;
+        const wanita = list.filter((w: any) => w.jenis_kelamin === 'PEREMPUAN' && w.status_warga === 'Aktif').length;
+        const mutasi = list.filter((w: any) => w.status_warga !== 'Aktif').length;
+        setOverallStats({
+          totalWarga: total,
+          aktif,
+          pria,
+          wanita,
+          mutasi,
+        });
+      }
+    } catch (e) {
+      console.error(e);
+    }
+  }, []);
+
   const fetchWarga = useCallback(async () => {
     setLoading(true);
     try {
@@ -78,6 +111,10 @@ export default function WargaPage() {
   useEffect(() => {
     fetchWarga();
   }, [fetchWarga]);
+
+  useEffect(() => {
+    fetchOverallStats();
+  }, [fetchOverallStats]);
 
   const handleSearchSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -120,6 +157,7 @@ export default function WargaPage() {
         setSelectedWarga(null);
         setMutationType(null);
         fetchWarga();
+        fetchOverallStats();
       } else {
         alert(data.error || 'Gagal mencatat mutasi');
       }
@@ -144,6 +182,7 @@ export default function WargaPage() {
         showToast(`Data warga "${wargaToDelete.nama_lengkap}" berhasil dihapus permanen.`);
         setWargaToDelete(null);
         fetchWarga();
+        fetchOverallStats();
       } else {
         alert(data.error || 'Gagal menghapus data warga');
       }
@@ -174,6 +213,7 @@ export default function WargaPage() {
         setIsResetModalOpen(false);
         setConfirmText('');
         fetchWarga();
+        fetchOverallStats();
       } else {
         alert(data.error || 'Gagal mereset database');
       }
@@ -222,9 +262,12 @@ export default function WargaPage() {
       {/* Header Halaman & Tombol Aksi */}
       <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-slate-900 dark:text-white flex items-center gap-2">
-            <Users className="w-7 h-7 text-emerald-600" />
+          <h1 className="text-xl sm:text-2xl font-bold text-slate-900 dark:text-white flex flex-wrap items-center gap-2.5">
+            <Users className="w-6 h-6 sm:w-7 sm:h-7 text-emerald-600 shrink-0" />
             <span>Master Data Warga RT</span>
+            <span className="px-2.5 py-0.5 rounded-full text-xs font-extrabold bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300 border border-emerald-300 dark:border-emerald-800 shadow-xs">
+              {loading && overallStats.totalWarga === 0 ? '...' : `${overallStats.totalWarga} Jiwa Terdata`}
+            </span>
           </h1>
           <p className="text-xs sm:text-sm text-slate-500">
             Daftar seluruh penduduk RT yang terdata dari Kartu Keluarga, buku mutasi, dan pencatatan warga.
@@ -290,47 +333,168 @@ export default function WargaPage() {
         </div>
       </div>
 
-      {/* Filter & Search Toolbar */}
-      <div className="bg-white dark:bg-slate-900 p-4 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm flex flex-col md:flex-row items-center gap-3">
-        <form onSubmit={handleSearchSubmit} className="relative flex-1 w-full">
-          <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
-          <input
-            type="text"
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            placeholder="Cari berdasarkan Nama, NIK, atau No. KK..."
-            className="w-full pl-9 pr-4 py-2 rounded-lg border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-xs text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-emerald-500"
-          />
-        </form>
-
-        <div className="flex items-center gap-2 w-full md:w-auto overflow-x-auto pb-1 md:pb-0">
-          {/* Status Filter */}
-          <div className="flex items-center bg-slate-100 dark:bg-slate-800 p-1 rounded-lg text-xs font-medium">
-            {['Aktif', 'Meninggal', 'Pindah', 'SEMUA'].map((st) => (
-              <button
-                key={st}
-                onClick={() => setStatusFilter(st)}
-                className={`px-3 py-1.5 rounded-md transition ${
-                  statusFilter === st
-                    ? 'bg-white dark:bg-slate-700 text-slate-900 dark:text-white shadow font-bold'
-                    : 'text-slate-500 hover:text-slate-800 dark:hover:text-slate-300'
-                }`}
-              >
-                {st === 'SEMUA' ? 'Semua Status' : st}
-              </button>
-            ))}
+      {/* Ringkasan Keseluruhan Data Warga */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+        {/* Total Seluruh Warga */}
+        <div className="bg-white dark:bg-slate-900 p-4 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm flex items-center gap-3.5 transition hover:border-emerald-300 dark:hover:border-emerald-800">
+          <div className="w-11 h-11 rounded-xl bg-emerald-50 dark:bg-emerald-950/60 border border-emerald-200 dark:border-emerald-800/60 flex items-center justify-center text-emerald-600 dark:text-emerald-400 shrink-0">
+            <Users className="w-5 h-5" />
           </div>
+          <div className="min-w-0">
+            <div className="text-[11px] font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider truncate">
+              Total Seluruh Warga
+            </div>
+            <div className="text-xl sm:text-2xl font-black text-slate-900 dark:text-white leading-tight">
+              {overallStats.totalWarga} <span className="text-xs font-semibold text-slate-500">Jiwa</span>
+            </div>
+            <div className="text-[10px] text-emerald-600 dark:text-emerald-400 font-medium truncate">
+              Keseluruhan penduduk terdata
+            </div>
+          </div>
+        </div>
 
-          {/* Gender Filter */}
-          <select
-            value={genderFilter}
-            onChange={(e) => setGenderFilter(e.target.value)}
-            className="px-3 py-2 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-xs text-slate-800 dark:text-slate-200"
-          >
-            <option value="SEMUA">Semua Gender</option>
-            <option value="LAKI-LAKI">Laki-Laki</option>
-            <option value="PEREMPUAN">Perempuan</option>
-          </select>
+        {/* Warga Aktif */}
+        <div className="bg-white dark:bg-slate-900 p-4 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm flex items-center gap-3.5 transition hover:border-blue-300 dark:hover:border-blue-800">
+          <div className="w-11 h-11 rounded-xl bg-blue-50 dark:bg-blue-950/60 border border-blue-200 dark:border-blue-800/60 flex items-center justify-center text-blue-600 dark:text-blue-400 shrink-0">
+            <UserCheck className="w-5 h-5" />
+          </div>
+          <div className="min-w-0">
+            <div className="text-[11px] font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider truncate">
+              Warga Aktif
+            </div>
+            <div className="text-xl sm:text-2xl font-black text-slate-900 dark:text-white leading-tight">
+              {overallStats.aktif} <span className="text-xs font-semibold text-slate-500">Jiwa</span>
+            </div>
+            <div className="text-[10px] text-blue-600 dark:text-blue-400 font-medium truncate">
+              Penduduk domisili aktif
+            </div>
+          </div>
+        </div>
+
+        {/* Komposisi Gender */}
+        <div className="bg-white dark:bg-slate-900 p-4 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm flex items-center gap-3.5 transition hover:border-indigo-300 dark:hover:border-indigo-800">
+          <div className="w-11 h-11 rounded-xl bg-indigo-50 dark:bg-indigo-950/60 border border-indigo-200 dark:border-indigo-800/60 flex items-center justify-center text-indigo-600 dark:text-indigo-400 shrink-0">
+            <HeartHandshake className="w-5 h-5" />
+          </div>
+          <div className="min-w-0">
+            <div className="text-[11px] font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider truncate">
+              Komposisi Gender
+            </div>
+            <div className="text-sm sm:text-base font-black text-slate-900 dark:text-white leading-tight">
+              <span className="text-blue-600 dark:text-blue-400">{overallStats.pria} L</span>
+              <span className="text-slate-300 dark:text-slate-600 mx-1.5">/</span>
+              <span className="text-rose-600 dark:text-rose-400">{overallStats.wanita} P</span>
+            </div>
+            <div className="text-[10px] text-indigo-600 dark:text-indigo-400 font-medium truncate">
+              Warga aktif (Pria / Wanita)
+            </div>
+          </div>
+        </div>
+
+        {/* Riwayat Mutasi */}
+        <div className="bg-white dark:bg-slate-900 p-4 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm flex items-center gap-3.5 transition hover:border-amber-300 dark:hover:border-amber-800">
+          <div className="w-11 h-11 rounded-xl bg-amber-50 dark:bg-amber-950/60 border border-amber-200 dark:border-amber-800/60 flex items-center justify-center text-amber-600 dark:text-amber-400 shrink-0">
+            <UserX className="w-5 h-5" />
+          </div>
+          <div className="min-w-0">
+            <div className="text-[11px] font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider truncate">
+              Riwayat Mutasi
+            </div>
+            <div className="text-xl sm:text-2xl font-black text-slate-900 dark:text-white leading-tight">
+              {overallStats.mutasi} <span className="text-xs font-semibold text-slate-500">Jiwa</span>
+            </div>
+            <div className="text-[10px] text-amber-600 dark:text-amber-400 font-medium truncate">
+              Meninggal / Pindah keluar
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Filter & Search Toolbar */}
+      <div className="bg-white dark:bg-slate-900 p-4 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm space-y-3">
+        <div className="flex flex-col md:flex-row items-center gap-3">
+          <form onSubmit={handleSearchSubmit} className="relative flex-1 w-full">
+            <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
+            <input
+              type="text"
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              placeholder="Cari berdasarkan Nama, NIK, atau No. KK..."
+              className="w-full pl-9 pr-9 py-2 rounded-lg border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-xs text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-emerald-500"
+            />
+            {search && (
+              <button
+                type="button"
+                onClick={() => setSearch('')}
+                className="absolute right-3 top-1/2 -translate-y-1/2 p-0.5 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200"
+                title="Hapus pencarian"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            )}
+          </form>
+
+          <div className="flex items-center gap-2 w-full md:w-auto overflow-x-auto pb-1 md:pb-0">
+            {/* Status Filter */}
+            <div className="flex items-center bg-slate-100 dark:bg-slate-800 p-1 rounded-lg text-xs font-medium">
+              {['Aktif', 'Meninggal', 'Pindah', 'SEMUA'].map((st) => (
+                <button
+                  key={st}
+                  onClick={() => setStatusFilter(st)}
+                  className={`px-3 py-1.5 rounded-md transition ${
+                    statusFilter === st
+                      ? 'bg-white dark:bg-slate-700 text-slate-900 dark:text-white shadow font-bold'
+                      : 'text-slate-500 hover:text-slate-800 dark:hover:text-slate-300'
+                  }`}
+                >
+                  {st === 'SEMUA' ? 'Semua Status' : st}
+                </button>
+              ))}
+            </div>
+
+            {/* Gender Filter */}
+            <select
+              value={genderFilter}
+              onChange={(e) => setGenderFilter(e.target.value)}
+              className="px-3 py-2 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-xs text-slate-800 dark:text-slate-200"
+            >
+              <option value="SEMUA">Semua Gender</option>
+              <option value="LAKI-LAKI">Laki-Laki</option>
+              <option value="PEREMPUAN">Perempuan</option>
+            </select>
+          </div>
+        </div>
+
+        {/* Status Keterangan Jumlah Tampil */}
+        <div className="flex items-center justify-between text-xs text-slate-500 dark:text-slate-400 px-1 pt-1 border-t border-slate-100 dark:border-slate-800/60">
+          <div>
+            {search.trim() || statusFilter !== 'SEMUA' || genderFilter !== 'SEMUA' ? (
+              <span>
+                Menampilkan <strong className="text-emerald-600 dark:text-emerald-400">{wargaList.length}</strong> dari total{' '}
+                <strong className="text-slate-900 dark:text-white">{overallStats.totalWarga}</strong> Warga
+                {search.trim() ? ` untuk kata kunci "${search}"` : ''}
+                {statusFilter !== 'SEMUA' ? ` • Status: ${statusFilter}` : ''}
+                {genderFilter !== 'SEMUA' ? ` • Gender: ${genderFilter === 'LAKI-LAKI' ? 'Laki-Laki' : 'Perempuan'}` : ''}
+              </span>
+            ) : (
+              <span>
+                Menampilkan seluruh <strong className="text-slate-900 dark:text-white">{overallStats.totalWarga}</strong> Warga terdaftar di lingkungan RT
+              </span>
+            )}
+          </div>
+          {(search.trim() || statusFilter !== 'Aktif' || genderFilter !== 'SEMUA') && (
+            <button
+              type="button"
+              onClick={() => {
+                setSearch('');
+                setStatusFilter('Aktif');
+                setGenderFilter('SEMUA');
+              }}
+              className="text-xs text-emerald-600 dark:text-emerald-400 hover:underline font-semibold shrink-0 ml-2"
+            >
+              Reset Filter
+            </button>
+          )}
         </div>
       </div>
 
