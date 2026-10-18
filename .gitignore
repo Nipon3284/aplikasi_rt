@@ -40,7 +40,8 @@ prisma/*.db-journal
 public/uploads/*
 
 # local data backups
-data/
+data/*
+!data/public-snapshot.json
 !public/uploads/.gitkeep
 
 # vercel
@@ -52,3 +53,6 @@ next-env.d.ts
 
 # desktop app launcher profile
 .app_profile/
+
+# local agent plugins
+.agents/

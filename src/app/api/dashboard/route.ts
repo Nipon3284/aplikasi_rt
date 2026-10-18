@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/db';
+import { readPublicSnapshot } from '@/lib/public-snapshot';
 
 export async function GET() {
   try {
@@ -98,8 +99,25 @@ export async function GET() {
         },
         recentMutasi,
       },
+      source: 'live',
     });
   } catch (error: any) {
-    return NextResponse.json({ success: false, error: error.message }, { status: 500 });
+    console.warn('Prisma live query failed in /api/dashboard, trying snapshot fallback:', error.message);
+    const snapshot = readPublicSnapshot();
+    if (snapshot?.dashboard) {
+      return NextResponse.json({
+        success: true,
+        data: snapshot.dashboard,
+        source: 'snapshot',
+        lastUpdated: snapshot.updatedAt,
+      });
+    }
+    return NextResponse.json(
+      {
+        success: false,
+        error: 'Basis data cloud sedang tidak dapat dijangkau dan belum ada data snapshot publik.',
+      },
+      { status: 503 }
+    );
   }
 }

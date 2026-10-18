@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/db';
 import { getSupabaseClient } from '@/lib/supabase-client';
 import { getSyncState, markSynced } from '@/lib/sync-state';
+import { generatePublicSnapshotData, writePublicSnapshot } from '@/lib/public-snapshot';
 
 export async function GET() {
   const isCloud = process.env.VERCEL === '1' || process.env.NEXT_PUBLIC_IS_PUBLIC_WEB === 'true';
@@ -41,6 +42,10 @@ export async function POST() {
     const localKK = await prisma.kartuKeluarga.findMany();
     const localWarga = await prisma.warga.findMany();
     const localMutasi = await prisma.riwayatMutasi.findMany();
+
+    // 1.1 Buat dan simpan snapshot data publik (aman & tanpa NIK) untuk ketahanan offline
+    const publicSnapshot = generatePublicSnapshotData(localKK, localWarga, localMutasi);
+    writePublicSnapshot(publicSnapshot);
 
     // 2. Hubungkan ke database cloud Supabase PostgreSQL
     const supabase = getSupabaseClient();

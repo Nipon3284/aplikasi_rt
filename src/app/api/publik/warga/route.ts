@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/db';
+import { readPublicSnapshot } from '@/lib/public-snapshot';
 
 function calculateAge(tanggalLahir: string): number {
   if (!tanggalLahir) return 0;
@@ -90,8 +91,26 @@ export async function GET() {
         rataRataUmur,
       },
       data: wargaPublik,
+      source: 'live',
     });
   } catch (error: any) {
-    return NextResponse.json({ success: false, error: error.message }, { status: 500 });
+    console.warn('Prisma live query failed in /api/publik/warga, trying snapshot fallback:', error.message);
+    const snapshot = readPublicSnapshot();
+    if (snapshot?.publikWarga) {
+      return NextResponse.json({
+        success: true,
+        stats: snapshot.publikWarga.stats,
+        data: snapshot.publikWarga.data,
+        source: 'snapshot',
+        lastUpdated: snapshot.updatedAt,
+      });
+    }
+    return NextResponse.json(
+      {
+        success: false,
+        error: 'Basis data cloud sedang tidak dapat dijangkau dan belum ada data snapshot publik.',
+      },
+      { status: 503 }
+    );
   }
 }
