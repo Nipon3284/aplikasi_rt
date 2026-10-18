@@ -15,7 +15,9 @@ import {
   X,
   CheckCircle2,
   FileSpreadsheet,
-  UploadCloud
+  UploadCloud,
+  Building2,
+  ShieldCheck
 } from 'lucide-react';
 
 export default function KKListPage() {
@@ -25,11 +27,36 @@ export default function KKListPage() {
   const [kkToDelete, setKKToDelete] = useState<any | null>(null);
   const [isDeletingKK, setIsDeletingKK] = useState(false);
   const [toastMessage, setToastMessage] = useState('');
+  const [overallStats, setOverallStats] = useState({
+    totalKK: 0,
+    tetap: 0,
+    kontrak: 0,
+    totalJiwa: 0,
+  });
 
   const showToast = (msg: string) => {
     setToastMessage(msg);
     setTimeout(() => setToastMessage(''), 4000);
   };
+
+  const fetchOverallStats = useCallback(async () => {
+    try {
+      const res = await fetch('/api/kk');
+      const data = await res.json();
+      if (data.success && Array.isArray(data.data)) {
+        const total = data.data.length;
+        const tetap = data.data.filter((k: any) => k.status_hunian === 'Tetap').length;
+        const kontrak = data.data.filter((k: any) => k.status_hunian === 'Kontrak').length;
+        const totalJiwa = data.data.reduce(
+          (acc: number, k: any) => acc + (k.anggota?.filter((a: any) => a.status_warga === 'Aktif').length || 0),
+          0
+        );
+        setOverallStats({ totalKK: total, tetap, kontrak, totalJiwa });
+      }
+    } catch (e) {
+      console.error(e);
+    }
+  }, []);
 
   const fetchKK = useCallback(async () => {
     setLoading(true);
@@ -38,6 +65,16 @@ export default function KKListPage() {
       const data = await res.json();
       if (data.success) {
         setKKList(data.data);
+        if (!search.trim()) {
+          const total = data.data.length;
+          const tetap = data.data.filter((k: any) => k.status_hunian === 'Tetap').length;
+          const kontrak = data.data.filter((k: any) => k.status_hunian === 'Kontrak').length;
+          const totalJiwa = data.data.reduce(
+            (acc: number, k: any) => acc + (k.anggota?.filter((a: any) => a.status_warga === 'Aktif').length || 0),
+            0
+          );
+          setOverallStats({ totalKK: total, tetap, kontrak, totalJiwa });
+        }
       }
     } catch (e) {
       console.error(e);
@@ -49,6 +86,10 @@ export default function KKListPage() {
   useEffect(() => {
     fetchKK();
   }, [fetchKK]);
+
+  useEffect(() => {
+    fetchOverallStats();
+  }, [fetchOverallStats]);
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
@@ -67,6 +108,7 @@ export default function KKListPage() {
         showToast(data.message || 'Kartu Keluarga berhasil dihapus');
         setKKToDelete(null);
         fetchKK();
+        fetchOverallStats();
       } else {
         alert(data.error || 'Gagal menghapus Kartu Keluarga');
       }
@@ -95,9 +137,12 @@ export default function KKListPage() {
       {/* Header Toolbar */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-4">
         <div>
-          <h1 className="text-xl sm:text-2xl font-bold text-slate-900 dark:text-white flex items-center gap-2">
+          <h1 className="text-xl sm:text-2xl font-bold text-slate-900 dark:text-white flex flex-wrap items-center gap-2.5">
             <UserCheck className="w-6 h-6 sm:w-7 sm:h-7 text-emerald-600 shrink-0" />
             <span>Daftar Kartu Keluarga (KK)</span>
+            <span className="px-2.5 py-0.5 rounded-full text-xs font-extrabold bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300 border border-emerald-300 dark:border-emerald-800 shadow-xs">
+              {loading && overallStats.totalKK === 0 ? '...' : `${overallStats.totalKK} KK Terdaftar`}
+            </span>
           </h1>
           <p className="text-xs sm:text-sm text-slate-500">
             Daftar seluruh Kepala Keluarga dan hunian yang terdaftar di lingkungan RT.
@@ -132,18 +177,130 @@ export default function KKListPage() {
         </div>
       </div>
 
+      {/* Ringkasan Jumlah Keseluruhan Kartu Keluarga */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+        {/* Total Kartu Keluarga */}
+        <div className="bg-white dark:bg-slate-900 p-4 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm flex items-center gap-3.5 transition hover:border-emerald-300 dark:hover:border-emerald-800">
+          <div className="w-11 h-11 rounded-xl bg-emerald-50 dark:bg-emerald-950/60 border border-emerald-200 dark:border-emerald-800/60 flex items-center justify-center text-emerald-600 dark:text-emerald-400 shrink-0">
+            <Home className="w-5 h-5" />
+          </div>
+          <div className="min-w-0">
+            <div className="text-[11px] font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider truncate">
+              Total Kartu Keluarga
+            </div>
+            <div className="text-xl sm:text-2xl font-black text-slate-900 dark:text-white leading-tight">
+              {overallStats.totalKK} <span className="text-xs font-semibold text-slate-500">KK</span>
+            </div>
+            <div className="text-[10px] text-emerald-600 dark:text-emerald-400 font-medium truncate">
+              Keseluruhan KK terdata
+            </div>
+          </div>
+        </div>
+
+        {/* Hunian Tetap */}
+        <div className="bg-white dark:bg-slate-900 p-4 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm flex items-center gap-3.5 transition hover:border-blue-300 dark:hover:border-blue-800">
+          <div className="w-11 h-11 rounded-xl bg-blue-50 dark:bg-blue-950/60 border border-blue-200 dark:border-blue-800/60 flex items-center justify-center text-blue-600 dark:text-blue-400 shrink-0">
+            <ShieldCheck className="w-5 h-5" />
+          </div>
+          <div className="min-w-0">
+            <div className="text-[11px] font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider truncate">
+              Hunian Tetap
+            </div>
+            <div className="text-xl sm:text-2xl font-black text-slate-900 dark:text-white leading-tight">
+              {overallStats.tetap} <span className="text-xs font-semibold text-slate-500">KK</span>
+            </div>
+            <div className="text-[10px] text-blue-600 dark:text-blue-400 font-medium truncate">
+              Rumah milik pribadi
+            </div>
+          </div>
+        </div>
+
+        {/* Hunian Kontrak */}
+        <div className="bg-white dark:bg-slate-900 p-4 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm flex items-center gap-3.5 transition hover:border-amber-300 dark:hover:border-amber-800">
+          <div className="w-11 h-11 rounded-xl bg-amber-50 dark:bg-amber-950/60 border border-amber-200 dark:border-amber-800/60 flex items-center justify-center text-amber-600 dark:text-amber-400 shrink-0">
+            <Building2 className="w-5 h-5" />
+          </div>
+          <div className="min-w-0">
+            <div className="text-[11px] font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider truncate">
+              Hunian Kontrak
+            </div>
+            <div className="text-xl sm:text-2xl font-black text-slate-900 dark:text-white leading-tight">
+              {overallStats.kontrak} <span className="text-xs font-semibold text-slate-500">KK</span>
+            </div>
+            <div className="text-[10px] text-amber-600 dark:text-amber-400 font-medium truncate">
+              Sewa / Kost / Kontrakan
+            </div>
+          </div>
+        </div>
+
+        {/* Total Jiwa dalam KK */}
+        <div className="bg-white dark:bg-slate-900 p-4 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm flex items-center gap-3.5 transition hover:border-indigo-300 dark:hover:border-indigo-800">
+          <div className="w-11 h-11 rounded-xl bg-indigo-50 dark:bg-indigo-950/60 border border-indigo-200 dark:border-indigo-800/60 flex items-center justify-center text-indigo-600 dark:text-indigo-400 shrink-0">
+            <Users className="w-5 h-5" />
+          </div>
+          <div className="min-w-0">
+            <div className="text-[11px] font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider truncate">
+              Total Jiwa dalam KK
+            </div>
+            <div className="text-xl sm:text-2xl font-black text-slate-900 dark:text-white leading-tight">
+              {overallStats.totalJiwa} <span className="text-xs font-semibold text-slate-500">Jiwa</span>
+            </div>
+            <div className="text-[10px] text-indigo-600 dark:text-indigo-400 font-medium truncate">
+              Anggota keluarga aktif
+            </div>
+          </div>
+        </div>
+      </div>
+
       {/* Search Toolbar */}
-      <div className="bg-white dark:bg-slate-900 p-3 sm:p-4 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm flex items-center gap-3">
-        <form onSubmit={handleSearch} className="relative flex-1">
-          <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
-          <input
-            type="text"
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            placeholder="Cari berdasarkan Nomor KK, Nama Kepala Keluarga, Alamat..."
-            className="w-full pl-9 pr-4 py-2 rounded-lg border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-xs text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-emerald-500"
-          />
-        </form>
+      <div className="bg-white dark:bg-slate-900 p-3 sm:p-4 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm space-y-2.5">
+        <div className="flex items-center gap-3">
+          <form onSubmit={handleSearch} className="relative flex-1">
+            <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
+            <input
+              type="text"
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              placeholder="Cari berdasarkan Nomor KK, Nama Kepala Keluarga, Alamat..."
+              className="w-full pl-9 pr-9 py-2 rounded-lg border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-xs text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-emerald-500"
+            />
+            {search && (
+              <button
+                type="button"
+                onClick={() => setSearch('')}
+                className="absolute right-3 top-1/2 -translate-y-1/2 p-0.5 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200"
+                title="Hapus pencarian"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            )}
+          </form>
+        </div>
+
+        {/* Status Keterangan Jumlah Tampil */}
+        <div className="flex items-center justify-between text-xs text-slate-500 dark:text-slate-400 px-1">
+          <div>
+            {search.trim() ? (
+              <span>
+                Menampilkan <strong className="text-emerald-600 dark:text-emerald-400">{kkList.length}</strong> dari total{' '}
+                <strong className="text-slate-900 dark:text-white">{overallStats.totalKK}</strong> Kartu Keluarga untuk kata kunci &ldquo;{search}&rdquo;
+              </span>
+            ) : (
+              <span>
+                Menampilkan seluruh <strong className="text-slate-900 dark:text-white">{overallStats.totalKK}</strong> Kartu Keluarga yang terdaftar
+              </span>
+            )}
+          </div>
+          {search.trim() && (
+            <button
+              type="button"
+              onClick={() => setSearch('')}
+              className="text-xs text-emerald-600 dark:text-emerald-400 hover:underline font-semibold"
+            >
+              Tampilkan Semua
+            </button>
+          )}
+        </div>
       </div>
 
       {/* Grid KK Cards */}
