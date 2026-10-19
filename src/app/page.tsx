@@ -48,6 +48,25 @@ export default function DashboardPage() {
     process.env.NEXT_PUBLIC_IS_PUBLIC_WEB === 'true' ||
     (typeof window !== 'undefined' && window.location.hostname.includes('vercel.app'));
 
+  const [currentUser, setCurrentUser] = useState<{ username: string; role: string; name: string } | null>(null);
+
+  useEffect(() => {
+    if (isPublicWeb) {
+      fetch('/api/auth/me')
+        .then((res) => res.json())
+        .then((data) => {
+          if (data.authenticated && data.user) {
+            setCurrentUser(data.user);
+          } else {
+            setCurrentUser(null);
+          }
+        })
+        .catch(() => setCurrentUser(null));
+    }
+  }, [isPublicWeb]);
+
+  const isAdmin = !isPublicWeb || Boolean(currentUser && currentUser.role === 'ADMIN');
+
   const fetchSyncState = useCallback(async () => {
     if (isPublicWeb) return;
     try {
@@ -259,37 +278,29 @@ export default function DashboardPage() {
           </p>
 
           <div className="pt-2 flex flex-wrap gap-2.5 sm:gap-3">
-            {isPublicWeb ? (
-              <>
-                <Link
-                  href="/publik"
-                  className="px-5 py-2.5 bg-emerald-500 hover:bg-emerald-600 text-slate-950 font-bold text-xs rounded-xl shadow-lg transition flex items-center gap-2"
-                >
-                  <Globe className="w-4 h-4" />
-                  <span>Lihat Data Warga Terbuka (Publik)</span>
-                </Link>
-
-                <Link
-                  href="/surat"
-                  className="px-5 py-2.5 bg-slate-800/90 hover:bg-slate-700 text-white font-semibold text-xs rounded-xl border border-slate-700 hover:border-emerald-500/50 shadow-md transition flex items-center gap-2 group"
-                >
-                  <FileText className="w-4 h-4 text-emerald-400 group-hover:scale-110 transition-transform" />
-                  <span>Layanan Surat Pengantar RT</span>
-                </Link>
-              </>
+            {isPublicWeb && !isAdmin ? (
+              <Link
+                href="/publik"
+                className="px-5 py-2.5 bg-emerald-500 hover:bg-emerald-600 text-slate-950 font-bold text-xs rounded-xl shadow-lg transition flex items-center gap-2"
+              >
+                <Globe className="w-4 h-4" />
+                <span>Lihat Data Warga Terbuka (Publik)</span>
+              </Link>
             ) : (
               <>
-                <Link
-                  href="/scan"
-                  className="px-4 py-2.5 bg-emerald-500 hover:bg-emerald-600 text-slate-950 font-bold text-xs rounded-xl shadow-lg transition flex items-center gap-2"
-                >
-                  <ScanLine className="w-4 h-4" />
-                  <span>Scan Fotokopi KK Baru</span>
-                </Link>
+                {!isPublicWeb && (
+                  <Link
+                    href="/scan"
+                    className="px-4 py-2.5 bg-emerald-500 hover:bg-emerald-600 text-slate-950 font-bold text-xs rounded-xl shadow-lg transition flex items-center gap-2"
+                  >
+                    <ScanLine className="w-4 h-4" />
+                    <span>Scan Fotokopi KK Baru</span>
+                  </Link>
+                )}
 
                 <Link
                   href="/warga"
-                  className="px-4 py-2.5 bg-slate-800/80 hover:bg-slate-700 text-white font-medium text-xs rounded-xl border border-slate-700 transition flex items-center gap-2"
+                  className="px-4 py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs rounded-xl shadow-md transition flex items-center gap-2"
                 >
                   <Users className="w-4 h-4" />
                   <span>Database Warga (Lengkap)</span>
@@ -302,6 +313,16 @@ export default function DashboardPage() {
                   <FileText className="w-4 h-4 text-emerald-400 group-hover:scale-110 transition-transform" />
                   <span>Layanan Surat Pengantar RT</span>
                 </Link>
+
+                {isPublicWeb && (
+                  <Link
+                    href="/publik"
+                    className="px-4 py-2.5 bg-slate-800/80 hover:bg-slate-700 text-slate-300 font-medium text-xs rounded-xl border border-slate-700 transition flex items-center gap-2"
+                  >
+                    <Globe className="w-4 h-4 text-teal-400" />
+                    <span>Lihat Data Warga Publik</span>
+                  </Link>
+                )}
               </>
             )}
           </div>

@@ -24,6 +24,7 @@ const ADMIN_API_PREFIXES = [
   '/api/import',
   '/api/sync',
   '/api/reset',
+  '/api/warga',
 ];
 
 export async function middleware(request: NextRequest) {

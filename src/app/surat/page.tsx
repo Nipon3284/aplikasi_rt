@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import { 
   FileText, 
   Printer, 
@@ -11,6 +12,8 @@ import {
 } from 'lucide-react';
 
 export default function SuratPage() {
+  const router = useRouter();
+  const [checkingAuth, setCheckingAuth] = useState(true);
   const [wargaList, setWargaList] = useState<any[]>([]);
   const [selectedNik, setSelectedNik] = useState('');
   const [jenisSurat, setJenisSurat] = useState('Surat Pengantar Pembuatan KTP / KK');
@@ -33,7 +36,32 @@ export default function SuratPage() {
     year: 'numeric',
   }));
 
+  // Deteksi lingkungan: Web Publik (Vercel) vs Aplikasi Lokal (Desktop)
+  const isPublicWeb =
+    process.env.NEXT_PUBLIC_IS_PUBLIC_WEB === 'true' ||
+    (typeof window !== 'undefined' && window.location.hostname.includes('vercel.app'));
+
   useEffect(() => {
+    if (isPublicWeb) {
+      fetch('/api/auth/me')
+        .then((res) => res.json())
+        .then((data) => {
+          if (!data.authenticated || data.user?.role !== 'ADMIN') {
+            router.replace('/login?redirect=/surat');
+          } else {
+            setCheckingAuth(false);
+          }
+        })
+        .catch(() => {
+          router.replace('/login?redirect=/surat');
+        });
+    } else {
+      setCheckingAuth(false);
+    }
+  }, [isPublicWeb, router]);
+
+  useEffect(() => {
+    if (checkingAuth) return;
     const fetchWarga = async () => {
       try {
         const res = await fetch('/api/warga?status=Aktif');
@@ -49,13 +77,22 @@ export default function SuratPage() {
       }
     };
     fetchWarga();
-  }, []);
+  }, [checkingAuth]);
 
   const selectedWarga = wargaList.find((w) => w.nik === selectedNik) || (wargaList.length > 0 ? wargaList[0] : null);
 
   const handlePrint = () => {
     window.print();
   };
+
+  if (checkingAuth) {
+    return (
+      <div className="min-h-[60vh] flex flex-col items-center justify-center gap-3">
+        <div className="w-8 h-8 border-4 border-emerald-500 border-t-transparent rounded-full animate-spin" />
+        <p className="text-xs text-slate-500 font-medium">Memverifikasi hak akses Pengurus RT...</p>
+      </div>
+    );
+  }
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6">
