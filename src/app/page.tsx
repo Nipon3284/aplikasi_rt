@@ -410,7 +410,7 @@ export default function DashboardPage() {
                 <span>Akses Cepat dari Ponsel</span>
               </div>
               <h3 className="text-lg font-bold text-white pt-1">
-                Scan QR Code SI-WARGA RT
+                Scan QR Code RT 3 Istimewa
               </h3>
               <p className="text-xs text-slate-400">
                 Buka aplikasi langsung dari browser smartphone Anda

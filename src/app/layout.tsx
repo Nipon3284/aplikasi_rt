@@ -3,8 +3,8 @@ import './globals.css';
 import Navbar from '@/components/layout/Navbar';
 
 export const metadata: Metadata = {
-  title: 'SI-WARGA RT | RT 03 RW 03 Istimewa',
-  description: 'Sistem Informasi Pengelolaan Data Warga, Verifikasi Hasil Scan Kartu Keluarga, dan Pencatatan Riwayat Mutasi Tingkat RT 03 RW 03 Istimewa.',
+  title: 'RT 3 Istimewa | Kependudukan RT 03 RW 03',
+  description: 'Sistem Informasi Kependudukan RT 3 Istimewa, RT 03 RW 03 Tambaksari Kidul.',
   icons: {
     icon: '/logo.jpg',
     shortcut: '/logo.jpg',
@@ -31,7 +31,7 @@ export default function RootLayout({
               <span className="font-semibold text-slate-700 dark:text-slate-300">Pengurus RT 03 RW 03 &quot;Istimewa&quot;</span>
             </div>
             <div>
-              &copy; {new Date().getFullYear()} SI-WARGA RT &bull; Guyub, Rukun, Kompak, Peduli
+              &copy; {new Date().getFullYear()} RT 3 Istimewa &bull; Guyub, Rukun, Kompak, Peduli
             </div>
           </div>
         </footer>

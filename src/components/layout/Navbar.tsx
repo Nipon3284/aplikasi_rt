@@ -205,7 +205,7 @@ export default function Navbar() {
             </div>
             <div className="shrink-0 flex flex-col justify-center">
               <div className="font-bold text-sm sm:text-base tracking-wide flex items-center gap-1.5 whitespace-nowrap">
-                <span>SI-WARGA RT</span>
+                <span className="font-black text-white tracking-tight">RT 3 ISTIMEWA</span>
                 <span className="text-[10px] sm:text-[11px] bg-gradient-to-r from-amber-500/20 to-emerald-500/20 text-amber-300 px-2 py-0.5 rounded-full border border-amber-500/40 font-semibold whitespace-nowrap">
                   RT 03 / RW 03
                 </span>
