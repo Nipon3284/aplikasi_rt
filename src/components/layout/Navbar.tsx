@@ -44,10 +44,16 @@ export default function Navbar() {
     name: string;
   } | null>(null);
 
-  // Deteksi lingkungan: Web Publik (Vercel) vs Aplikasi Lokal (Desktop)
-  const isPublicWeb =
-    process.env.NEXT_PUBLIC_IS_PUBLIC_WEB === 'true' ||
-    (typeof window !== 'undefined' && window.location.hostname.includes('vercel.app'));
+  // Deteksi lingkungan: Web Publik vs Aplikasi Lokal (Desktop)
+  // Default: true (aman saat SSR untuk pengunjung online)
+  const [isPublicWeb, setIsPublicWeb] = useState(true);
+
+  useEffect(() => {
+    const isLocal =
+      typeof window !== 'undefined' &&
+      (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1');
+    setIsPublicWeb(!isLocal);
+  }, []);
 
   const fetchCurrentUser = useCallback(async () => {
     try {

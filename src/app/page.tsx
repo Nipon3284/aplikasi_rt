@@ -43,29 +43,41 @@ export default function DashboardPage() {
   });
   const [isSyncing, setIsSyncing] = useState(false);
 
-  // Deteksi lingkungan: Web Publik (Vercel) vs Aplikasi Lokal (Desktop)
-  const isPublicWeb =
-    process.env.NEXT_PUBLIC_IS_PUBLIC_WEB === 'true' ||
-    (typeof window !== 'undefined' && window.location.hostname.includes('vercel.app'));
-
+  // Deteksi lingkungan & hak akses admin
+  // Default: isPublicWeb = true, isAdmin = false (aman saat SSR untuk pengunjung online)
+  const [isPublicWeb, setIsPublicWeb] = useState(true);
+  const [isAdmin, setIsAdmin] = useState(false);
   const [currentUser, setCurrentUser] = useState<{ username: string; role: string; name: string } | null>(null);
 
   useEffect(() => {
-    if (isPublicWeb) {
-      fetch('/api/auth/me')
-        .then((res) => res.json())
-        .then((data) => {
-          if (data.authenticated && data.user) {
-            setCurrentUser(data.user);
-          } else {
-            setCurrentUser(null);
-          }
-        })
-        .catch(() => setCurrentUser(null));
-    }
-  }, [isPublicWeb]);
+    const isLocal =
+      typeof window !== 'undefined' &&
+      (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1');
 
-  const isAdmin = !isPublicWeb || Boolean(currentUser && currentUser.role === 'ADMIN');
+    if (isLocal) {
+      setIsPublicWeb(false);
+      setIsAdmin(true);
+      return;
+    }
+
+    // Di web online / hosting Vercel
+    setIsPublicWeb(true);
+    fetch('/api/auth/me')
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.authenticated && data.user?.role === 'ADMIN') {
+          setCurrentUser(data.user);
+          setIsAdmin(true);
+        } else {
+          setCurrentUser(null);
+          setIsAdmin(false);
+        }
+      })
+      .catch(() => {
+        setCurrentUser(null);
+        setIsAdmin(false);
+      });
+  }, []);
 
   const fetchSyncState = useCallback(async () => {
     if (isPublicWeb) return;
