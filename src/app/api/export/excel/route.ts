@@ -1,10 +1,27 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { cookies } from 'next/headers';
 import { prisma } from '@/lib/db';
 import { generatePopulationExcelReport } from '@/lib/excel-service';
+import { COOKIE_NAME, verifySessionToken } from '@/lib/auth';
 
 export const dynamic = 'force-dynamic';
 
+const isPublicWeb = process.env.VERCEL === '1' || process.env.NEXT_PUBLIC_IS_PUBLIC_WEB === 'true';
+
 export async function GET(req: NextRequest) {
+  // Defense-in-Depth: verifikasi sesi admin di dalam handler
+  if (isPublicWeb) {
+    const cookieStore = cookies();
+    const token = cookieStore.get(COOKIE_NAME)?.value;
+    const session = token ? await verifySessionToken(token) : null;
+    if (!session || session.role !== 'ADMIN') {
+      return NextResponse.json(
+        { success: false, error: 'Akses ditolak: Anda harus login sebagai Pengurus RT.' },
+        { status: 401 }
+      );
+    }
+  }
+
   try {
     const { searchParams } = new URL(req.url);
     const search = searchParams.get('search') || '';

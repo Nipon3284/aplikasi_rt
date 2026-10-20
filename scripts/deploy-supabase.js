@@ -26,6 +26,19 @@ try {
     stdio: 'inherit',
   });
   console.log('✅ Skema tabel KartuKeluarga, Warga, Mutasi, dan ScanQueue berhasil sinkron di Supabase!');
+
+  // Aktifkan RLS pada tabel-tabel publik untuk keamanan Supabase PostgREST
+  console.log('🔒 Mengaktifkan Row Level Security (RLS) pada tabel-tabel publik...');
+  const prismaCloudInit = new PrismaClient({
+    datasources: { db: { url: DIRECT_URL } },
+  });
+  for (const table of ['ScanQueue', 'KartuKeluarga', 'Warga', 'RiwayatMutasi']) {
+    try {
+      await prismaCloudInit.$executeRawUnsafe(`ALTER TABLE public."${table}" ENABLE ROW LEVEL SECURITY;`);
+    } catch (_) {}
+  }
+  await prismaCloudInit.$disconnect();
+  console.log('✅ Row Level Security (RLS) aktif pada seluruh tabel publik!');
 } catch (e) {
   console.error('❌ Gagal membuat skema di Supabase:', e.message);
   process.exit(1);

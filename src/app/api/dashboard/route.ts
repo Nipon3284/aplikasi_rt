@@ -29,6 +29,15 @@ export async function GET() {
       prisma.riwayatMutasi.findMany({
         take: 5,
         orderBy: { createdAt: 'desc' },
+        select: {
+          id: true,
+          nama_warga: true,
+          jenis_mutasi: true,
+          tanggal_kejadian: true,
+          dicatat_oleh: true,
+          createdAt: true,
+          // Kolom sensitif TIDAK disertakan: nik, no_kk, keterangan, no_surat, bukti_dokumen
+        },
       }),
     ]);
 

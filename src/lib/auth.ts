@@ -1,15 +1,18 @@
 import { SignJWT, jwtVerify } from 'jose';
 
-const JWT_SECRET_STRING = process.env.JWT_SECRET || 'si-warga-rt-secret-key-2026-istimewa-rw03-rt03';
-const JWT_SECRET = new TextEncoder().encode(JWT_SECRET_STRING);
+const JWT_SECRET_STRING = process.env.JWT_SECRET;
+if (!JWT_SECRET_STRING) {
+  console.error('PERINGATAN KEAMANAN: JWT_SECRET belum dikonfigurasi di environment variable!');
+}
+const JWT_SECRET = new TextEncoder().encode(JWT_SECRET_STRING || 'FALLBACK_NOT_SECURE_CHANGE_ME');
 
 export const COOKIE_NAME = 'si_warga_token';
 
-// Kredensial Admin Default Sesuai Rancangan
+// Kredensial Admin wajib diset melalui Environment Variable
 export const DEFAULT_ADMIN = {
-  username: process.env.ADMIN_USERNAME || 'kangmasngud',
-  password: process.env.ADMIN_PASSWORD || 'kangmasngud123',
-  name: 'kangmasngud (admin)',
+  username: process.env.ADMIN_USERNAME || '',
+  password: process.env.ADMIN_PASSWORD || '',
+  name: process.env.ADMIN_USERNAME ? `${process.env.ADMIN_USERNAME} (admin)` : 'Admin RT',
   role: 'ADMIN' as const,
 };
 
@@ -47,6 +50,15 @@ export async function verifySessionToken(token: string): Promise<TokenPayload | 
  */
 export function validateAdminCredentials(username?: string, password?: string): boolean {
   if (!username || !password) return false;
+
+  // Pastikan kredensial admin sudah dikonfigurasi
+  if (!DEFAULT_ADMIN.username || !DEFAULT_ADMIN.password) {
+    console.error(
+      'PERINGATAN KEAMANAN: ADMIN_USERNAME dan ADMIN_PASSWORD belum dikonfigurasi di environment variable! Login tidak dapat dilakukan.'
+    );
+    return false;
+  }
+
   return (
     username.trim().toLowerCase() === DEFAULT_ADMIN.username.toLowerCase() &&
     password === DEFAULT_ADMIN.password
